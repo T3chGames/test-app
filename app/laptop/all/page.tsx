@@ -10,7 +10,13 @@ const getData = async () => {
 };
 
 export default async function Page() {
-  let data = await getData();
-  console.log(data);
-  return <h1 className="font-xxl">data: {JSON.stringify(data)}</h1>;
+  return (
+    <div>
+      <div className="container-img w-full h-screen min-w-full">test</div>
+    </div>
+  );
+
+  // let data = await getData();
+  // console.log(data);
+  // return <h1 className="font-xxl">data: {JSON.stringify(data)}</h1>;
 }

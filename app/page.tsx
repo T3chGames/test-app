@@ -1,63 +1,174 @@
 "use client";
-import React, { useState } from "react";
-import { DndContext } from "@dnd-kit/core";
-import { Draggable } from "./components/Draggable";
-import { Droppable } from "./components/Droppable";
+import "./globals.css";
+import React, { useRef } from "react";
+import EmailEditor, { EditorRef, EmailEditorProps } from "react-email-editor";
 
-const notesData = [
-  {
-    id: "1",
-    content: "Study English",
-    position: {
-      x: 0,
-      y: 0,
+export default function Page() {
+  const emailEditorRef = useRef<EditorRef>(null);
+
+  const theme = {
+    theme: "dark",
+    panels: {
+      tools: {
+        dock: "left",
+        collapsible: true,
+        tabs: {
+          body: {
+            visible: true,
+          },
+        },
+      },
     },
-  },
-  {
-    id: "2",
-    content: "Study German",
-    position: {
-      x: 10,
-      y: 10,
+    features: {
+      preview: true,
     },
-  },
-];
+  };
 
-export default function App() {
-  const [notes, setNotes] = useState(notesData);
-  const [parent, setParent] = useState(null);
+  const exportHtml = () => {
+    const user = { id: 1, email: "breiderkoen13@gmail.com" };
+    localStorage.setItem("user", JSON.stringify(user));
+    // const unlayer = emailEditorRef.current?.editor;
 
-  function handleDragEnd(ev) {
-    // What to do here??
-    // It's not a sortable, it's a free drag and drop
-    const note = notes.find((x) => x.id === ev.active.id);
-    note.position.x += ev.delta.x;
-    note.position.y += ev.delta.y;
-    const _notes = notes.map((x) => {
-      if (x.id === note.id) return note;
-      return x;
+    // unlayer?.exportHtml((data) => {
+    //   const { design, html } = data;
+    //   console.log("exportHtml", html);
+    // });
+  };
+  const exportJson = () => {
+    const unlayer = emailEditorRef.current?.editor;
+
+    unlayer?.saveDesign((design) => {
+      console.log("exportJson", JSON.stringify(design));
     });
-    setNotes(_notes);
-    setParent(ev ? ev.over.id : null);
-    console.log(ev.over.id);
-  }
+  };
+
+  const saveData = async (data) => {
+    const requestOptions = {
+      method: "POST",
+      body: JSON.stringify(data),
+    };
+
+    await fetch(`http://127.0.0.1:8000/api/template`, requestOptions).then(
+      (response) => {
+        console.log(response);
+      }
+    );
+
+    // const data = await laptops.json();
+    // return {
+    //   data: data,
+    // };
+  };
+
+  const saveTemplate = () => {
+    const unlayer = emailEditorRef.current?.editor;
+
+    unlayer?.saveDesign((design) => {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const template = design;
+      saveData({ templateUser: user, template: template });
+    });
+  };
+
+  //   function waitForElementToDisplay(
+  //     selector,
+  //     callback,
+  //     checkFrequencyInMs,
+  //     timeoutInMs
+  //   ) {
+  //     var startTimeInMs = Date.now();
+  //     (function loopSearch() {
+  //       if (document.querySelector(selector) != null) {
+  //         console.log("found");
+  //         callback();
+  //         return;
+  //       } else {
+  //         setTimeout(function () {
+  //           if (timeoutInMs && Date.now() - startTimeInMs > timeoutInMs) return;
+  //           loopSearch();
+  //           console.log("searching");
+  //         }, checkFrequencyInMs);
+  //       }
+  //     })();
+  //   }
+
+  //   waitForElementToDisplay(
+  //     ".blockbuilder-branding",
+  //     function () {
+  //       console.log("found");
+  //     },
+  //     1000,
+  //     9000
+  //   );
+
+  const onReady: EmailEditorProps["onReady"] = (unlayer) => {
+    // unlayer.loadTemplate(2);
+  };
+
+  const onLoad = () => {};
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
-      {notes.map((note) => (
-        <Draggable
-          styles={{
-            position: "absolute",
-            left: `${note.position.x}px`,
-            top: `${note.position.y}px`,
-          }}
-          key={note.id}
-          id={note.id}
-          content={note.content}
-        />
-      ))}
-
-      <Droppable key="container" id="container"></Droppable>
-    </DndContext>
+    <div className="container">
+      <EmailEditor
+        id="iframe2"
+        editorId="editor-container"
+        ref={emailEditorRef}
+        onReady={onReady}
+        minHeight={600}
+        appearance={theme}
+        onLoad={onLoad}
+      />
+      <div className="grid bg-darkslate grid-cols-3">
+        <div className="relative">
+          <span className="absolute bottom-0 left-0 ml-4 m-2">
+            <a className="font-bold text-lg shadow-xl" href="">
+              LOGIN FOR COMPANY'S
+            </a>
+          </span>
+        </div>
+        <div className="grid grid-cols-2">
+          {/* <button
+            className="bg-tropicalindigo font-bold mr-2 p-2 rounded-xl mt-1 mb-2 shadow-xl "
+            onClick={exportHtml}
+          >
+            Export HTML
+          </button> */}
+          {/* <div onClick={exportHtml} className="w-[266px] h-[51px]">
+            <div className="p-2">
+              <div className="relative w-[266px] h-[51px] bg-collection-1-tropical-indigo rounded-[25px] shadow-[0px_4px_4px_#00000040]">
+                <div className="absolute w-[245px] top-[10px] left-[15px] [font-family:'Inter-Bold',Helvetica] font-bold text-collection-1-text text-[25px] tracking-[0] leading-[normal] whitespace-nowrap">
+                  ADD ATTACHMENT
+                </div>
+              </div>
+            </div>
+          </div> */}
+          <button
+            className="bg-tropicalindigo font-bold mr-2 pl-5 pr-5 p-2 rounded-xl mt-1 mb-2 shadow-xl"
+            onClick={exportJson}
+          >
+            EXPORT JSON
+          </button>
+          <button
+            className="bg-tropicalindigo font-bold mr-2 pl-2 pr-2 p-2 rounded-xl mt-1 mb-2 shadow-xl"
+            onClick={saveTemplate}
+          >
+            SAVE TEMPLATE
+          </button>
+          <button
+            className="bg-ultraviolet font-bold mr-2 pl-5 pr-5 p-2 rounded-xl mt-1 mb-2 shadow-xl"
+            onClick={exportJson}
+          >
+            EXPORT JSON
+          </button>
+          <button
+            className="bg-ultraviolet font-bold mr-2 pl-2 pr-2 p-2 rounded-xl mt-1 mb-2 shadow-xl"
+            onClick={saveTemplate}
+          >
+            SAVE TEMPLATE
+          </button>
+        </div>
+        <div>abc</div>
+      </div>
+    </div>
   );
 }

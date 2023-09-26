@@ -6,6 +6,16 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+  --collection-1-background: rgba(42, 40, 49, 1);
+  --collection-1-borders: rgba(42, 40, 49, 1);
+  --collection-1-dark-slate-gray: rgba(26, 58, 58, 1);
+  --collection-1-different-thistle: rgba(221, 196, 221, 1);
+  --collection-1-icons: rgba(115, 106, 222, 1);
+  --collection-1-remove-button: rgba(252, 69, 69, 1);
+  --collection-1-text: rgba(255, 255, 255, 1);
+  --collection-1-thistle: rgba(220, 207, 236, 1);
+  --collection-1-tropical-indigo: rgba(169, 151, 223, 1);
+  --collection-1-ultra-violet: rgba(79, 81, 125, 1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,4 +35,22 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+}
+
+body,
+html {
+  height: 100%;
+  margin: 0px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  /* min-height: 650px; */
+  height: 100%;
+}
+
+.container-img {
+  background-image: url("https://www.w3schools.com/cssref/w3css.gif");
 }
