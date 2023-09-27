@@ -1,10 +1,12 @@
 "use client";
 import "./globals.css";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import EmailEditor, { EditorRef, EmailEditorProps } from "react-email-editor";
+import RecipientTable from "./components/RecipientTable";
 
 export default function Page() {
   const emailEditorRef = useRef<EditorRef>(null);
+  const [isOpen, setIsOpen] = useState(true);
 
   const theme = {
     theme: "dark",
@@ -70,45 +72,18 @@ export default function Page() {
     });
   };
 
-  //   function waitForElementToDisplay(
-  //     selector,
-  //     callback,
-  //     checkFrequencyInMs,
-  //     timeoutInMs
-  //   ) {
-  //     var startTimeInMs = Date.now();
-  //     (function loopSearch() {
-  //       if (document.querySelector(selector) != null) {
-  //         console.log("found");
-  //         callback();
-  //         return;
-  //       } else {
-  //         setTimeout(function () {
-  //           if (timeoutInMs && Date.now() - startTimeInMs > timeoutInMs) return;
-  //           loopSearch();
-  //           console.log("searching");
-  //         }, checkFrequencyInMs);
-  //       }
-  //     })();
-  //   }
-
-  //   waitForElementToDisplay(
-  //     ".blockbuilder-branding",
-  //     function () {
-  //       console.log("found");
-  //     },
-  //     1000,
-  //     9000
-  //   );
-
   const onReady: EmailEditorProps["onReady"] = (unlayer) => {
     // unlayer.loadTemplate(2);
   };
 
   const onLoad = () => {};
 
+  const openModal = () => {
+    return setIsOpen(!isOpen);
+  };
+
   return (
-    <div className="container">
+    <div className={`container ${isOpen ? "blur-sm" : ""}`}>
       <EmailEditor
         id="iframe2"
         editorId="editor-container"
@@ -118,10 +93,15 @@ export default function Page() {
         appearance={theme}
         onLoad={onLoad}
       />
+      {isOpen ? (
+        <RecipientTable setIsOpen={setIsOpen} open={isOpen}></RecipientTable>
+      ) : (
+        " "
+      )}
       <div className="grid bg-darkslate grid-cols-3">
         <div className="relative">
           <span className="absolute bottom-0 left-0 ml-4 m-2">
-            <a className="font-bold text-lg shadow-xl" href="">
+            <a className="font-bold text-lg shadow-xl" href="/login">
               LOGIN FOR COMPANY'S
             </a>
           </span>
@@ -162,12 +142,11 @@ export default function Page() {
           </button>
           <button
             className="bg-ultraviolet font-bold mr-2 pl-2 pr-2 p-2 rounded-xl mt-1 mb-2 shadow-xl"
-            onClick={saveTemplate}
+            onClick={openModal}
           >
-            SAVE TEMPLATE
+            TOGGLE
           </button>
         </div>
-        <div>abc</div>
       </div>
     </div>
   );

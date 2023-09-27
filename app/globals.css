@@ -29,12 +29,7 @@
 body {
   /* color: rgb(var(--foreground-rgb)); */
   color: white;
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: #2a2831;
 }
 
 body,
@@ -53,4 +48,8 @@ html {
 
 .container-img {
   background-image: url("https://www.w3schools.com/cssref/w3css.gif");
+}
+
+.text-shadow {
+  text-shadow: #2a2831 2px 2px;
 }
