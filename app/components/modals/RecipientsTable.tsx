@@ -10,8 +10,10 @@ export default function RecipientsTable(open) {
   //   console.log(open);
   // let [isOpen, setIsOpen] = useState(open.isOpen);
   let [subject, setSubject] = useState("");
-  let [recipients, setRecipients] = useState<recipient[] | null>(
-    JSON.parse(localStorage.getItem("recipients") || "") as recipient[]
+  let [recipients, setRecipients] = useState<recipient[] | []>(
+    localStorage.getItem("recipients")
+      ? []
+      : (JSON.parse(localStorage.getItem("recipients")) as recipient[])
   );
 
   let inputChange = (e) => {

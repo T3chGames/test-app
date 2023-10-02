@@ -13,9 +13,14 @@ export default function Page() {
     templateName: false,
     attachmentsTable: false,
   });
-
+  const [attachments, setAttachments] = useState([]);
   const [templateName, setTemplateName] = useState("");
   const [templateDescription, setTemplateDescription] = useState("");
+  const [user, setUser] = useState(
+    localStorage.getItem("user") == null
+      ? null
+      : JSON.parse(localStorage.getItem("user"))
+  );
 
   const theme = {
     theme: "dark",
@@ -100,12 +105,13 @@ export default function Page() {
   };
 
   const onReady: EmailEditorProps["onReady"] = (unlayer) => {
-    // unlayer.loadTemplate(2);
+    console.log(user);
   };
 
   const onLoad = () => {};
 
   const openModal = (id) => {
+    console.log(attachments);
     return setAllIsOpen({ ...allIsOpen, [id]: !allIsOpen[id] });
   };
 
@@ -140,7 +146,7 @@ export default function Page() {
             <div className="">
               <input
                 placeholder="template name"
-                className="w-2/3 input font-bold text-2xl text-black outline-none text-center"
+                className="w-2/3 input font-bold text-xl text-black outline-none text-center"
                 type="text"
                 onChange={(e) => setTemplateName(e.target.value)}
               />
@@ -148,7 +154,7 @@ export default function Page() {
             <div className="">
               <input
                 placeholder="template description"
-                className="w-2/3 input font-bold text-2xl text-black outline-none text-center"
+                className="w-2/3 input font-bold text-xl text-black outline-none text-center"
                 type="text"
                 onChange={(e) => setTemplateDescription(e.target.value)}
               />
@@ -185,58 +191,86 @@ export default function Page() {
         setisOpen={setAllIsOpen}
         _key="attachmentsTable"
         isOpen={allIsOpen}
+        attachments={attachments}
+        setAttachments={setAttachments}
       ></AttachmentsTable>
 
-      <div className="grid bg-darkslate grid-cols-3">
-        <div className="relative">
+      <div className="grid bg-darkslate grid-cols-[450px_450px_auto] w-screen">
+        <div className="relative col-span-1">
           <span className="absolute bottom-0 left-0 ml-4 m-2">
-            <a className="font-bold text-lg shadow-xl" href="/login">
-              LOGIN FOR COMPANY'S
-            </a>
+            {user === null ? (
+              <a className="font-bold text-lg shadow-xl" href="/login">
+                LOGIN FOR COMPANYS
+              </a>
+            ) : (
+              <a
+                className="font-bold text-lg shadow-xl hover:cursor-pointer"
+                onClick={() => console.log("gello")}
+              >
+                {" "}
+                LOGOUT
+              </a>
+            )}
           </span>
         </div>
-        <div className="grid grid-cols-2">
-          {/* <button
-            className="bg-tropicalindigo font-bold mr-2 p-2 rounded-xl mt-1 mb-2 shadow-xl "
-            onClick={exportHtml}
-          >
-            Export HTML
-          </button> */}
-          {/* <div onClick={exportHtml} className="w-[266px] h-[51px]">
-            <div className="p-2">
-              <div className="relative w-[266px] h-[51px] bg-collection-1-tropical-indigo rounded-[25px] shadow-[0px_4px_4px_#00000040]">
-                <div className="absolute w-[245px] top-[10px] left-[15px] [font-family:'Inter-Bold',Helvetica] font-bold text-collection-1-text text-[25px] tracking-[0] leading-[normal] whitespace-nowrap">
-                  ADD ATTACHMENT
-                </div>
-              </div>
+        <div className="col-span-1">
+          <div className="flex w-1/2">
+            <div className="w-40">
+              <button
+                className="bg-tropicalindigo w-40 font-bold mr-2 pl-5 pr-5 p-2 rounded-xl mt-1 mb-2 shadow-xl"
+                onClick={() => openModal("attachmentsTable")}
+              >
+                ATTACHMENTS
+              </button>
+              <button
+                className="bg-ultraviolet w-40 font-bold mr-2 pl-5 pr-5 p-2 rounded-xl mt-1 mb-2 shadow-xl"
+                onClick={exportJson}
+              >
+                EXPORT JSON
+              </button>
             </div>
-          </div> */}
-          <button
-            className="bg-tropicalindigo font-bold mr-2 pl-5 pr-5 p-2 rounded-xl mt-1 mb-2 shadow-xl"
-            onClick={() =>
-              setAllIsOpen({ ...allIsOpen, attachmentsTable: true })
-            }
-          >
-            ATTACHMENTS
-          </button>
-          <button
-            className="bg-tropicalindigo font-bold mr-2 pl-2 pr-2 p-2 rounded-xl mt-1 mb-2 shadow-xl"
-            onClick={() => setAllIsOpen({ ...allIsOpen, templateName: true })}
-          >
-            SAVE TEMPLATE
-          </button>
-          <button
-            className="bg-ultraviolet font-bold mr-2 pl-5 pr-5 p-2 rounded-xl mt-1 mb-2 shadow-xl"
-            onClick={exportJson}
-          >
-            EXPORT JSON
-          </button>
-          <button
-            className="bg-ultraviolet font-bold mr-2 pl-2 pr-2 p-2 rounded-xl mt-1 mb-2 shadow-xl"
-            onClick={() => openModal("recipientTable")}
-          >
-            RECIPIENTS
-          </button>
+            <div className="w-40 ml-2">
+              <button
+                className="bg-tropicalindigo w-40 font-bold mr-2 pl-2 pr-2 p-2 rounded-xl mt-1 mb-2 shadow-xl"
+                onClick={() => openModal("templateName")}
+              >
+                SAVE AS DRAFT
+              </button>
+              <button
+                className="bg-ultraviolet w-40 font-bold mr-2 pl-2 pr-2 p-2 rounded-xl mt-1 mb-2 shadow-xl"
+                onClick={() => openModal("templateName")}
+              >
+                SAVE TEMPLATE
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="flex col-span-1">
+          <div className="ml-auto mr-2">
+            <input
+              className="text-black w-40 p-2 rounded-m mt-1 mb-2 font-bold text-l shadow-xl block ml-auto"
+              type="date"
+              name=""
+              id=""
+            />
+            <input
+              className="text-black w-40 p-2 rounded-m mt-1 mb-2 font-bold text-l shadow-xl block ml-auto"
+              type="time"
+              name=""
+              id=""
+            />
+          </div>
+          <div className="">
+            <button
+              className="bg-tropicalindigo font-bold w-40 mr-2 pl-2 pr-2 p-2 rounded-xl mt-1 mb-2 shadow-xl block ml-auto"
+              onClick={() => openModal("recipientTable")}
+            >
+              RECIPIENTS
+            </button>
+            <button className="bg-ultraviolet font-bold mr-2 pl-5 pr-5 w-40 p-2 rounded-xl mt-1 mb-2 shadow-xl block ml-auto">
+              SEND
+            </button>
+          </div>
         </div>
       </div>
     </div>

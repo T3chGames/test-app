@@ -15,7 +15,7 @@ export default function popup(content) {
         <Dialog.Title></Dialog.Title>
         <div className="fixed inset-0 flex items-center justify-center p-4 recipient-table">
           <div className="container flex align-middle items-center mt-96">
-            <div className="bg-modalbackground w-1/4 h-1/4 p-4">
+            <div className="bg-modalbackground w-1/4 h-1/3 p-4">
               <div className="flex">
                 {content.title}
                 <button

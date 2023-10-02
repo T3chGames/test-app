@@ -7,13 +7,20 @@ interface recipient {
 }
 
 export default function attachmentsTable(open) {
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState(
+    open.attachments.length > 0 ? open.attachments : []
+  );
 
   const deleteFile = (index) => {
     let tempfiles = [...files];
     tempfiles.splice(index, 1);
 
     setFiles(tempfiles);
+  };
+
+  const saveAttachments = () => {
+    open.setAttachments(files);
+    console.log(files);
   };
 
   return (
@@ -85,7 +92,10 @@ export default function attachmentsTable(open) {
                 <div className="container relative">
                   <div className="grid grid-cols-3 w-full absolute bottom-0">
                     <div>
-                      <button className="bg-tropicalindigo hover:bg-ultraviolet text-black font-bold text-xl p-1 pl-10 pr-10 ml-12 mr-6 mb-4 rounded-2xl">
+                      <button
+                        onClick={() => saveAttachments()}
+                        className="bg-tropicalindigo hover:bg-ultraviolet text-black font-bold text-xl p-1 pl-10 pr-10 ml-12 mr-6 mb-4 rounded-2xl"
+                      >
                         SAVE
                       </button>
                     </div>
