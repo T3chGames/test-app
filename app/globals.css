@@ -36,8 +36,11 @@ body {
 body,
 html {
   height: 100%;
+  min-height: 100%;
   margin: 0px;
 }
+
+
 
 .input {
   display: block;
@@ -52,9 +55,6 @@ html {
   height: 100%;
 }
 
-.container-img {
-  background-image: url("https://www.w3schools.com/cssref/w3css.gif");
-}
 
 .text-shadow {
   text-shadow: #2a2831 2px 2px;

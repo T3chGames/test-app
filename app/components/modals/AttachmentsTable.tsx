@@ -8,7 +8,9 @@ interface recipient {
 
 export default function attachmentsTable(open) {
   const [files, setFiles] = useState(
-    open.attachments.length > 0 ? open.attachments : []
+    localStorage.getItem("attachments") != null
+      ? JSON.parse(localStorage.getItem("attachments"))
+      : null
   );
 
   const deleteFile = (index) => {
@@ -59,7 +61,7 @@ export default function attachmentsTable(open) {
                     </tr>
                   </thead>
                   <tbody>
-                    {files.length > 0 ? (
+                    {files !== null && files.length > 0 ? (
                       files.map((file, index) => {
                         return (
                           <tr key={`${file.name} tr`} className="">
@@ -111,7 +113,7 @@ export default function attachmentsTable(open) {
                         onChange={(e) => {
                           //   let tempArray;
                           //   if (files !== undefined) {
-                          //     tempArray = files;
+                          //     tempArray = files;1
                           //   } else {
                           //     tempArray = [];
                           //   }

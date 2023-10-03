@@ -12,6 +12,7 @@ export default function page() {
     await fetch(`http://127.0.0.1:8000/api/decode`, requestOptions).then(
       (response) => {
         response.json().then((data) => {
+          console.log(data);
           localStorage.setItem("user", JSON.stringify(data));
           window.location.href = "/";
         });

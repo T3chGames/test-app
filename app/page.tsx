@@ -5,6 +5,7 @@ import EmailEditor, { EditorRef, EmailEditorProps } from "react-email-editor";
 import RecipientTable from "./components/modals/RecipientsTable";
 import PopupModal from "./components/modals/PopupModal";
 import AttachmentsTable from "./components/modals/AttachmentsTable";
+import { googleLogout } from "@react-oauth/google";
 
 export default function Page() {
   const emailEditorRef = useRef<EditorRef>(null);
@@ -12,14 +13,33 @@ export default function Page() {
     recipientTable: false,
     templateName: false,
     attachmentsTable: false,
+    saveAsDraft: false,
   });
-  const [attachments, setAttachments] = useState([]);
+
+  const [containerHeight, setContainerHeight] = useState(600);
+
+  const [attachments, setAttachments] = useState(
+    localStorage.getItem("attachments") == null
+      ? null
+      : JSON.parse(localStorage.getItem("attachments"))
+  );
   const [templateName, setTemplateName] = useState("");
   const [templateDescription, setTemplateDescription] = useState("");
+  const [templatePublic, setTemplatePublic] = useState(false);
+  const [subject, setSubject] = useState(
+    localStorage.getItem("subject") == null
+      ? null
+      : localStorage.getItem("subject")
+  );
   const [user, setUser] = useState(
     localStorage.getItem("user") == null
       ? null
       : JSON.parse(localStorage.getItem("user"))
+  );
+  const [recipients, setRecipients] = useState(
+    localStorage.getItem("recipients") == null
+      ? null
+      : JSON.parse(localStorage.getItem("recipients"))
   );
 
   const theme = {
@@ -40,16 +60,6 @@ export default function Page() {
     },
   };
 
-  const exportHtml = () => {
-    const user = { id: 1, email: "breiderkoen13@gmail.com" };
-    localStorage.setItem("user", JSON.stringify(user));
-    // const unlayer = emailEditorRef.current?.editor;
-
-    // unlayer?.exportHtml((data) => {
-    //   const { design, html } = data;
-    //   console.log("exportHtml", html);
-    // });
-  };
   const exportJson = () => {
     const unlayer = emailEditorRef.current?.editor;
 
@@ -58,7 +68,7 @@ export default function Page() {
     });
   };
 
-  const saveData = async (data) => {
+  const saveTemplateRequest = async (data) => {
     const requestOptions = {
       method: "POST",
       body: JSON.stringify(data),
@@ -69,19 +79,34 @@ export default function Page() {
         console.log(response);
       }
     );
+  };
 
-    // const data = await laptops.json();
-    // return {
-    //   data: data,
-    // };
+  const getTemplates = async () => {
+    await fetch(
+      `http://127.0.0.1:8000/api/template/?userId=${user.id}&userEmail=${user.email}`
+    ).then((res) => {
+      res.json().then((data) => {
+        console.log(data);
+      });
+    });
+  };
+
+  const saveDraftRequest = async (data) => {
+    const requestOptions = {
+      method: "POST",
+      body: JSON.stringify(data),
+    };
+    await fetch(`http://127.0.0.1:8000/api/draft`, requestOptions).then(
+      (response) => {
+        console.log(response);
+      }
+    );
   };
 
   const saveTemplate = () => {
-    if (localStorage.getItem("user") == null) {
-      localStorage.setItem(
-        "user",
-        JSON.stringify({ email: "breiderkoen13@gmail.com", id: 1 })
-      );
+    if (user == null) {
+      alert("you must be logged in to save a template");
+      return;
     }
 
     if (!(templateName.length > 0 && templateDescription.length > 0)) {
@@ -89,23 +114,53 @@ export default function Page() {
       return;
     }
 
-    console.log(localStorage.getItem("user"));
+    console.log(user);
     const unlayer = emailEditorRef.current?.editor;
     unlayer?.saveDesign((design) => {
-      const user = JSON.parse(localStorage.getItem("user"));
       const template = design;
-      saveData({
+      saveTemplateRequest({
         templateUser: user,
         template: template,
         templateName: templateName,
         templateDescription: templateDescription,
+        publicTemplate: templatePublic,
       });
-      setAllIsOpen({ ...allIsOpen, templateName: false });
+      closeModal("templateName");
+    });
+  };
+
+  const saveDraft = () => {
+    if (user == null) {
+      alert("you must be logged in to save a template");
+      return;
+    }
+
+    if (!(templateName.length > 0 && templateDescription.length > 0)) {
+      alert("template name and description are required");
+      return;
+    }
+    console.log(user);
+    const unlayer = emailEditorRef.current?.editor;
+    unlayer?.saveDesign((design) => {
+      const template = design;
+      saveDraftRequest({
+        templateUser: user,
+        template: template,
+        templateName: templateName,
+        templateDescription: templateDescription,
+        recipients: recipients,
+        attachments: attachments,
+        subject: subject,
+        sendOn: null,
+      });
+      closeModal("saveAsDraft");
     });
   };
 
   const onReady: EmailEditorProps["onReady"] = (unlayer) => {
-    console.log(user);
+    setContainerHeight(
+      document.getElementById("editorContainer")?.offsetHeight
+    );
   };
 
   const onLoad = () => {};
@@ -124,18 +179,26 @@ export default function Page() {
     }
   };
 
+  const logout = () => {
+    googleLogout();
+    localStorage.removeItem("user");
+    setUser(null);
+  };
+
   return (
-    <div className={`container w-full ${checkOpen() ? "blur-sm" : ""}`}>
+    <div
+      className={`container text-center w-full ${checkOpen() ? "blur-sm" : ""}`}
+    >
       <EmailEditor
+        className="h-full"
         id="iframe2"
         editorId="editor-container"
         ref={emailEditorRef}
         onReady={onReady}
-        minHeight={600}
+        minHeight={containerHeight}
         appearance={theme}
         onLoad={onLoad}
       />
-
       <PopupModal
         isOpen={allIsOpen}
         setisOpen={setAllIsOpen}
@@ -159,6 +222,15 @@ export default function Page() {
                 onChange={(e) => setTemplateDescription(e.target.value)}
               />
             </div>
+            <div className="text-xl font-bold">
+              <label htmlFor="public">Public template: </label>
+              <input
+                onChange={(e) => setTemplatePublic(e.target.checked)}
+                type="checkbox"
+                name="public"
+                id="public"
+              />
+            </div>
           </div>
         }
         action={
@@ -170,9 +242,7 @@ export default function Page() {
               Save
             </button>
             <button
-              onClick={() =>
-                setAllIsOpen({ ...allIsOpen, templateName: false })
-              }
+              onClick={() => closeModal("templateName")}
               className="text-2xl font-bold bg-ultraviolet ml-auto mr-6 w-24 h-8 rounded-md shadow-2xl"
             >
               Cancel
@@ -180,23 +250,65 @@ export default function Page() {
           </div>
         }
       ></PopupModal>
-
+      <PopupModal
+        isOpen={allIsOpen}
+        setisOpen={setAllIsOpen}
+        _key="saveAsDraft"
+        title={<h1 className="font-bold text-3xl ml-auto">Save as draft</h1>}
+        content={
+          <div className="grid grid-rows-2 text-center mt-4 h-1/2">
+            <div className="">
+              <input
+                placeholder="template name"
+                className="w-2/3 input font-bold text-xl text-black outline-none text-center"
+                type="text"
+                onChange={(e) => setTemplateName(e.target.value)}
+              />
+            </div>
+            <div className="">
+              <input
+                placeholder="template description"
+                className="w-2/3 input font-bold text-xl text-black outline-none text-center"
+                type="text"
+                onChange={(e) => setTemplateDescription(e.target.value)}
+              />
+            </div>
+            <h1 className="text-3xl">
+              subject: {localStorage.getItem("subject")}
+            </h1>
+          </div>
+        }
+        action={
+          <div className="flex mt-2">
+            <button
+              onClick={saveDraft}
+              className="text-2xl font-bold ml-6 bg-tropicalindigo w-24 h-8 rounded-md shadow-2xl"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => closeModal("saveAsDraft")}
+              className="text-2xl font-bold bg-ultraviolet ml-auto mr-6 w-24 h-8 rounded-md shadow-2xl"
+            >
+              Cancel
+            </button>
+          </div>
+        }
+      ></PopupModal>
       <RecipientTable
         setisOpen={setAllIsOpen}
         _key="recipientTable"
         isOpen={allIsOpen}
       ></RecipientTable>
-
       <AttachmentsTable
         setisOpen={setAllIsOpen}
         _key="attachmentsTable"
         isOpen={allIsOpen}
-        attachments={attachments}
         setAttachments={setAttachments}
       ></AttachmentsTable>
-
       <div className="grid bg-darkslate grid-cols-[450px_450px_auto] w-screen">
-        <div className="relative col-span-1">
+        <div className="relative col-span-1 text-left">
+          <h1 className="ml-4">templates</h1>
           <span className="absolute bottom-0 left-0 ml-4 m-2">
             {user === null ? (
               <a className="font-bold text-lg shadow-xl" href="/login">
@@ -205,7 +317,8 @@ export default function Page() {
             ) : (
               <a
                 className="font-bold text-lg shadow-xl hover:cursor-pointer"
-                onClick={() => console.log("gello")}
+                // onClick={logout}
+                onClick={getTemplates}
               >
                 {" "}
                 LOGOUT
@@ -232,7 +345,7 @@ export default function Page() {
             <div className="w-40 ml-2">
               <button
                 className="bg-tropicalindigo w-40 font-bold mr-2 pl-2 pr-2 p-2 rounded-xl mt-1 mb-2 shadow-xl"
-                onClick={() => openModal("templateName")}
+                onClick={() => openModal("saveAsDraft")}
               >
                 SAVE AS DRAFT
               </button>

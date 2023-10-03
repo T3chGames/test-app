@@ -81,6 +81,7 @@ export default function RecipientsTable(open) {
 
   let saveRecipients = () => {
     localStorage.setItem("recipients", JSON.stringify(recipients));
+    open.setisOpen({ ...open.isOpen, [open._key]: false });
   };
 
   return (
