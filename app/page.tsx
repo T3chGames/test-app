@@ -1,11 +1,12 @@
 "use client";
 import "./globals.css";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import EmailEditor, { EditorRef, EmailEditorProps } from "react-email-editor";
 import RecipientTable from "./components/modals/RecipientsTable";
 import PopupModal from "./components/modals/PopupModal";
 import AttachmentsTable from "./components/modals/AttachmentsTable";
 import { googleLogout } from "@react-oauth/google";
+import ExportImportModal from "./components/modals/ExportImport";
 
 export default function Page() {
   const emailEditorRef = useRef<EditorRef>(null);
@@ -14,10 +15,11 @@ export default function Page() {
     templateName: false,
     attachmentsTable: false,
     saveAsDraft: false,
+    exportImport: true,
   });
 
   const [containerHeight, setContainerHeight] = useState(600);
-
+  const [templates, setTemplates] = useState([]);
   const [attachments, setAttachments] = useState(
     localStorage.getItem("attachments") == null
       ? null
@@ -26,6 +28,7 @@ export default function Page() {
   const [templateName, setTemplateName] = useState("");
   const [templateDescription, setTemplateDescription] = useState("");
   const [templatePublic, setTemplatePublic] = useState(false);
+
   const [subject, setSubject] = useState(
     localStorage.getItem("subject") == null
       ? null
@@ -41,6 +44,15 @@ export default function Page() {
       ? null
       : JSON.parse(localStorage.getItem("recipients"))
   );
+
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+
+  useEffect(() => {
+    setContainerHeight(
+      document.getElementById("editorContainer")?.offsetHeight
+    );
+    getTemplates();
+  }, []);
 
   const theme = {
     theme: "dark",
@@ -60,13 +72,19 @@ export default function Page() {
     },
   };
 
-  const exportJson = () => {
-    const unlayer = emailEditorRef.current?.editor;
-
-    unlayer?.saveDesign((design) => {
-      console.log("exportJson", JSON.stringify(design));
-    });
-  };
+  // const importTemplate = (index) => {
+  //   const unlayer = emailEditorRef.current?.editor;
+  //   if (templates[index] == undefined) {
+  //     unlayer?.loadBlank();
+  //     setTemplateIsImported(false);
+  //     setImportedTemplate(null);
+  //     return;
+  //   }
+  //   console.log(templates[index]);
+  //   unlayer?.loadDesign(JSON.parse(templates[index].templateData));
+  //   setTemplateIsImported(true);
+  //   setImportedTemplate(templates[index]);
+  // };
 
   const saveTemplateRequest = async (data) => {
     const requestOptions = {
@@ -86,7 +104,8 @@ export default function Page() {
       `http://127.0.0.1:8000/api/template/?userId=${user.id}&userEmail=${user.email}`
     ).then((res) => {
       res.json().then((data) => {
-        console.log(data);
+        console.log(data.templates);
+        return setTemplates(data.templates);
       });
     });
   };
@@ -157,11 +176,7 @@ export default function Page() {
     });
   };
 
-  const onReady: EmailEditorProps["onReady"] = (unlayer) => {
-    setContainerHeight(
-      document.getElementById("editorContainer")?.offsetHeight
-    );
-  };
+  const onReady: EmailEditorProps["onReady"] = (unlayer) => {};
 
   const onLoad = () => {};
 
@@ -306,9 +321,15 @@ export default function Page() {
         isOpen={allIsOpen}
         setAttachments={setAttachments}
       ></AttachmentsTable>
+      <ExportImportModal
+        closeModal={closeModal}
+        _key="exportImport"
+        isOpen={allIsOpen}
+        unlayer={emailEditorRef.current?.editor}
+        templates={templates}
+      ></ExportImportModal>
       <div className="grid bg-darkslate grid-cols-[450px_450px_auto] w-screen">
         <div className="relative col-span-1 text-left">
-          <h1 className="ml-4">templates</h1>
           <span className="absolute bottom-0 left-0 ml-4 m-2">
             {user === null ? (
               <a className="font-bold text-lg shadow-xl" href="/login">
@@ -327,30 +348,30 @@ export default function Page() {
           </span>
         </div>
         <div className="col-span-1">
-          <div className="flex w-1/2">
-            <div className="w-40">
+          <div className="flex w-6/8">
+            <div className="w-1/3 text-left">
               <button
-                className="bg-tropicalindigo w-40 font-bold mr-2 pl-5 pr-5 p-2 rounded-xl mt-1 mb-2 shadow-xl"
+                className="bg-tropicalindigo w-44 font-bold mr-2 pl-5 pr-5 p-2 rounded-xl mt-1 mb-2 shadow-xl"
                 onClick={() => openModal("attachmentsTable")}
               >
                 ATTACHMENTS
               </button>
               <button
-                className="bg-ultraviolet w-40 font-bold mr-2 pl-5 pr-5 p-2 rounded-xl mt-1 mb-2 shadow-xl"
-                onClick={exportJson}
+                className="bg-ultraviolet w-44 font-bold mr-2 pl-5 pr-5 p-2 rounded-xl mt-1 mb-2 shadow-xl"
+                onClick={() => openModal("exportImport")}
               >
-                EXPORT JSON
+                IMPORT/EXPORT
               </button>
             </div>
-            <div className="w-40 ml-2">
+            <div className="w-60 ml-2">
               <button
-                className="bg-tropicalindigo w-40 font-bold mr-2 pl-2 pr-2 p-2 rounded-xl mt-1 mb-2 shadow-xl"
+                className="bg-tropicalindigo w-44 font-bold mr-2 pl-2 pr-2 p-2 rounded-xl mt-1 mb-2 shadow-xl"
                 onClick={() => openModal("saveAsDraft")}
               >
                 SAVE AS DRAFT
               </button>
               <button
-                className="bg-ultraviolet w-40 font-bold mr-2 pl-2 pr-2 p-2 rounded-xl mt-1 mb-2 shadow-xl"
+                className="bg-ultraviolet w-44 font-bold mr-2 pl-2 pr-2 p-2 rounded-xl mt-1 mb-2 shadow-xl"
                 onClick={() => openModal("templateName")}
               >
                 SAVE TEMPLATE
