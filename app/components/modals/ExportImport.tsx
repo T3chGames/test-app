@@ -18,9 +18,15 @@ function loadTemplate(unlayer, template) {
   if (Object.hasOwn(template, "templateData")) {
     template = JSON.parse(template.templateData);
   }
-  console.log(unlayer);
-  console.log(template);
-  unlayer?.loadDesign(template);
+
+  if (Object.hasOwn(template, "body") && Object.hasOwn(template, "counters")) {
+    console.log(unlayer);
+    console.log(template);
+    unlayer?.loadDesign(template);
+  } else {
+    alert("Please make sure the file is a template!");
+  }
+
   //   setTemplateIsImported(true);
   //   setImportedTemplate(template);
 }
@@ -74,9 +80,9 @@ export default function ExportImportModal(content: any) {
     >
       <Dialog.Panel>
         <Dialog.Title></Dialog.Title>
-        <div className="fixed inset-0 flex items-center justify-center p-4 recipient-table">
-          <div className="container flex align-middle items-center mt-40">
-            <div className="bg-modalbackground w-2/5 h-3/4 p-4">
+        <div className="fixed inset-0 flex items-center justify-center p-4 max-h-[120rem]">
+          <div className="container flex align-middle items-center sm:mt-[2rem] mt-40 md:mb-16 md:h-3/4 sm:h-3/5 sm:mb-40">
+            <div className="bg-modalbackground w-2/5 h-2/4 sm:h-[32rem] p-4">
               <div className="flex">
                 <h1 className="font-bold text-3xl ml-auto uppercase">
                   Export/import templates
@@ -88,8 +94,8 @@ export default function ExportImportModal(content: any) {
                   X
                 </button>
               </div>
-              <div className="h-4/5">
-                <div className="w-full max-w-md max-h-12 px-2 py-16 sm:px-0 ml-auto mr-auto">
+              <div className="h-3/5">
+                <div className="w-full max-w-md px-2 py-4 sm:px-0 ml-auto mr-auto">
                   <Tab.Group>
                     <Tab.List className="flex space-x-1 rounded-xl bg-tropicalindigo p-1">
                       <Tab
@@ -135,12 +141,12 @@ export default function ExportImportModal(content: any) {
                         Import JSON
                       </Tab>
                     </Tab.List>
-                    <Tab.Panels className="mt-2 max-h-56">
+                    <Tab.Panels className="mt-2">
                       <Tab.Panel
                         key="export"
                         className={classNames(
                           "rounded-xl bg-white p-3",
-                          "focus:outline-none h-60"
+                          "focus:outline-none h-72"
                         )}
                       >
                         {renderTemplates(content.templates, content.unlayer)}
@@ -198,9 +204,9 @@ export default function ExportImportModal(content: any) {
                   </Tab.Group>
                 </div>
               </div>
-              <div className="action-buttons mt-auto">
+              <div className="action-buttons mt-20">
                 <button
-                  className="bg-tropicalindigo hover:bg-ultraviolet text-black font-bold text-xl p-1 pl-10 pr-10 ml-14 mr-6 mb-4 rounded-2xl"
+                  className="bg-tropicalindigo hover:bg-ultraviolet text-black font-bold text-xl p-1 pl-10 pr-10 ml-14 mr-6 mb-4 md:mt-4 sm:mt-44 rounded-2xl"
                   onClick={() => content.closeModal(content._key)}
                 >
                   SAVE
@@ -218,11 +224,13 @@ function renderTemplates(templates, unlayer) {
   const filterOnPublic = (publicTemplate: boolean) => {
     let filteredTemplates = templates.filter((item) => {
       // returns the public templates
-      if (item.publicTemplate > 0 && publicTemplate) {
-        return item;
+      if (publicTemplate) {
+        if (item.publicTemplate > 0) {
+          return item;
+        } else {
+          return;
+        }
       } else {
-        //returns the templates of the user
-
         return item;
       }
     });
@@ -266,10 +274,12 @@ function renderTemplates(templates, unlayer) {
           key="export"
           className={classNames(
             "rounded-xl bg-white p-3",
-            "focus:outline-none"
+            "focus:outline-none",
+            "md:h-32",
+            "sm:h-30"
           )}
         >
-          <ul>
+          <ul className="overflow-y-scroll h-[12rem]">
             <li
               key="blank"
               className="relative rounded-md p-3 hover:bg-gray-100"
@@ -324,10 +334,14 @@ function renderTemplates(templates, unlayer) {
         </Tab.Panel>
         <Tab.Panel
           key="download"
-          className="rounded-xl bg-white p-1 
-      focus:outline-none"
+          className={classNames(
+            "rounded-xl bg-white p-3",
+            "focus:outline-none",
+            "md:h-32",
+            "sm:h-30"
+          )}
         >
-          <ul>
+          <ul className="overflow-y-scroll h-[12rem]">
             {filterOnPublic(true).map((template, index) => (
               <li
                 key={template.id}

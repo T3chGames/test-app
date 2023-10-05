@@ -1,0 +1,22 @@
+### FRONT END ###
+    - hide attachments button when user is not logged in
+        -import from database disabled when user is not logged in
+        -save draft button hidden (or make modal that gives notification that the user needs to be logged in) when no user is logged in
+        -save template should save to local storage when user is not logged in
+
+    - send attachments to the backend
+    - make a screen for loading in a draft\
+
+    
+
+### BACK END ###
+    -make a schedular that checks the "sent" emails table for emails that have not been send at should be send at the current time (should check every minute)
+        -when the schedular has found a index that should be send it will send it and change the index to sent : true
+        - stil have to add that to the modal and a new migration
+    -store attachments
+    -write the rest of the logic for sending an email and figuring out who is the main reciever and who should be marked as cc or bcc
+
+
+
+
+

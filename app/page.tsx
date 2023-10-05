@@ -15,7 +15,7 @@ export default function Page() {
     templateName: false,
     attachmentsTable: false,
     saveAsDraft: false,
-    exportImport: true,
+    exportImport: false,
   });
 
   const [containerHeight, setContainerHeight] = useState(600);
@@ -45,13 +45,28 @@ export default function Page() {
       : JSON.parse(localStorage.getItem("recipients"))
   );
 
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [userDrafts, setUserDrafts] = useState([]);
+
+  const [sendDate, setSendDate] = useState(null);
+  const [sendTime, setSendTime] = useState(null);
+
+  const fetchDrafts = async () => {
+    const drafts = await fetch(
+      `http://127.0.0.1:8000/api/drafts/?userId=${user.id}`
+    ).then((res) => {
+      res.json().then((drafts) => {
+        setUserDrafts(drafts);
+        console.log(drafts);
+      });
+    });
+  };
 
   useEffect(() => {
     setContainerHeight(
       document.getElementById("editorContainer")?.offsetHeight
     );
     getTemplates();
+    fetchDrafts();
   }, []);
 
   const theme = {
@@ -170,7 +185,10 @@ export default function Page() {
         recipients: recipients,
         attachments: attachments,
         subject: subject,
-        sendOn: null,
+        sendOn:
+          sendDate != null && sendTime !== null
+            ? Date.parse(sendDate + " " + sendTime)
+            : null,
       });
       closeModal("saveAsDraft");
     });
@@ -338,8 +356,7 @@ export default function Page() {
             ) : (
               <a
                 className="font-bold text-lg shadow-xl hover:cursor-pointer"
-                // onClick={logout}
-                onClick={getTemplates}
+                onClick={logout}
               >
                 {" "}
                 LOGOUT
@@ -384,12 +401,18 @@ export default function Page() {
             <input
               className="text-black w-40 p-2 rounded-m mt-1 mb-2 font-bold text-l shadow-xl block ml-auto"
               type="date"
+              onChange={(e) => {
+                setSendDate(e.target.value);
+              }}
               name=""
               id=""
             />
             <input
               className="text-black w-40 p-2 rounded-m mt-1 mb-2 font-bold text-l shadow-xl block ml-auto"
               type="time"
+              onChange={(e) => {
+                setSendTime(e.target.value);
+              }}
               name=""
               id=""
             />
