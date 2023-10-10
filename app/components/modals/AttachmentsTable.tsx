@@ -7,21 +7,33 @@ interface recipient {
 }
 
 export default function attachmentsTable(open) {
-  const [files, setFiles] = useState(
-    localStorage.getItem("attachments") != null
-      ? JSON.parse(localStorage.getItem("attachments"))
-      : null
-  );
+  const [files, setFiles] = useState();
+  const [fileDisplayArray, setFileDisplayArray] = useState([]);
 
   const deleteFile = (index) => {
-    let tempfiles = [...files];
-    tempfiles.splice(index, 1);
+    const dt = new DataTransfer();
+    console.log(files);
+    console.log(files.files);
+    for (let i = 0; i < files.files.length; i++) {
+      if (i !== index) {
+        dt.items.add(files.files[i]);
+      }
+    }
+    let newElement = files;
+    newElement.files = dt.files;
+    setFiles(newElement);
 
-    setFiles(tempfiles);
+    console.log(files.files);
+    let tempfiles = [...fileDisplayArray];
+    tempfiles.splice(index, 1);
+    setFileDisplayArray(tempfiles);
   };
 
   const saveAttachments = () => {
+    // console.log(JSON.stringify(files));
     open.setAttachments(files);
+    // localStorage.setItem("attachments", JSON.stringify(files));
+    open.closeModal(open._key);
     console.log(files);
   };
 
@@ -29,7 +41,7 @@ export default function attachmentsTable(open) {
     <Dialog
       className="w-full h-full"
       open={open.isOpen[open._key]}
-      onClose={() => open.setisOpen({ ...open.isOpen, [open._key]: false })}
+      onClose={() => open.closeModal(open._key)}
     >
       <Dialog.Panel>
         <Dialog.Title></Dialog.Title>
@@ -39,9 +51,7 @@ export default function attachmentsTable(open) {
               <div className="flex">
                 <button
                   className="ml-auto m-2 mr-3 font-bold text-2xl hover:text-red-600"
-                  onClick={() =>
-                    open.setisOpen({ ...open.isOpen, [open._key]: false })
-                  }
+                  onClick={() => open.closeModal(open._key)}
                 >
                   X
                 </button>
@@ -61,8 +71,9 @@ export default function attachmentsTable(open) {
                     </tr>
                   </thead>
                   <tbody>
-                    {files !== null && files.length > 0 ? (
-                      files.map((file, index) => {
+                    {fileDisplayArray !== null &&
+                    fileDisplayArray.length > 0 ? (
+                      fileDisplayArray.map((file, index) => {
                         return (
                           <tr key={`${file.name} tr`} className="">
                             <th key={`${file.name} empty`}></th>
@@ -111,21 +122,23 @@ export default function attachmentsTable(open) {
                         name="subject"
                         placeholder="subject"
                         onChange={(e) => {
-                          //   let tempArray;
-                          //   if (files !== undefined) {
-                          //     tempArray = files;1
-                          //   } else {
-                          //     tempArray = [];
-                          //   }
-                          let tempArray = [...files];
+                          console.log(e);
+                          let tempArray = [...fileDisplayArray];
+                          // if (fileDisplayArray) {
+                          //   tempArray = files;
+                          // } else {
+                          //   tempArray = [];
+                          // }
                           if (
                             document.getElementById("upload").files !== null
                           ) {
                             tempArray.push(
                               ...document.getElementById("upload").files
                             );
-                            setFiles(tempArray);
                           }
+                          setFileDisplayArray(tempArray);
+                          console.log(tempArray);
+                          setFiles(document.getElementById("upload"));
                         }}
                       />
                     </div>

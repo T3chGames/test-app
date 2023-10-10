@@ -1,5 +1,5 @@
 "use client";
-import { GoogleLogin, useGoogleLogin } from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function page() {
   const decodeLogin = async (bearerToken: string) => {

@@ -6,18 +6,24 @@ interface recipient {
   copy: "bcc" | "cc" | "mainReciever";
 }
 
-export default function RecipientsTable(open) {
-  //   console.log(open);
-  // let [isOpen, setIsOpen] = useState(open.isOpen);
-  let [subject, setSubject] = useState("");
-  let [recipients, setRecipients] = useState<recipient[] | []>(
+export default function RecipientsTable(content) {
+  //   console.log(content);
+  // let [isOpen, setIscontent] = useState(content.isOpen);
+
+  let [recipients, setRecipients] = useState(
     localStorage.getItem("recipients")
-      ? []
-      : (JSON.parse(localStorage.getItem("recipients")) as recipient[])
+      ? JSON.parse(localStorage.getItem("recipients"))
+      : { reciever: [], cc: [], bcc: [] }
   );
 
+  // let [recipients, setRecipients] = useState<recipient[] | []>(
+  //   localStorage.getItem("recipients")
+  //     ? []
+  //     : (JSON.parse(localStorage.getItem("recipients")) as recipient[])
+  // );
+
   let inputChange = (e) => {
-    setSubject(e.target.value);
+    content.setSubject(e.target.value);
     localStorage.setItem("subject", e.target.value);
     console.log(e.target.value);
   };
@@ -28,67 +34,82 @@ export default function RecipientsTable(open) {
     document.getElementById("emailInput").value = "";
   };
 
-  let checkForMainReciever = (): boolean => {
-    if (
-      recipients?.some((_recipient) => {
-        return _recipient.copy == "mainReciever";
-      })
-    ) {
-      alert("There can only be one main reciever");
-      return true;
-    } else {
-      return false;
-    }
-  };
+  // let checkForMainReciever = (): boolean => {
+  //   if (
+  //     recipients?.some((_recipient) => {
+  //       return _recipient.copy == "mainReciever";
+  //     })
+  //   ) {
+  //     alert("There can only be one main reciever");
+  //     return true;
+  //   } else {
+  //     return false;
+  //   }
+  // };
 
   let addRecipient = () => {
-    let copy = document.getElementById("copy").value;
-    if (copy === "mainReciever") if (checkForMainReciever()) return;
+    let _recipients = JSON.parse(JSON.stringify(recipients));
+    let checkDuplicate = (array, item) => {
+      if (array.lenght > 0) {
+        return false;
+      }
+      if (
+        array.some((_item) => {
+          return _item == item;
+        })
+      ) {
+        alert("Duplicate item");
+      } else {
+        return false;
+      }
+    };
 
     let email = document.getElementById("emailInput").value;
+    let copy = document.getElementById("copy").value;
     if (!(email.length > 0 && copy.length > 0)) {
       alert("fields must be filled in");
       return;
     }
-    let recipient = { email: email, copy: copy };
-    if (recipients != null) {
-      if (
-        recipients.some((_recipient) => {
-          return _recipient.email == recipient.email;
-        })
-      ) {
-        alert("Error, recipient already exists");
-        return;
-      } else {
-        let tempArray = [...recipients];
-        tempArray.push(recipient);
-        setRecipients(tempArray);
-      }
-    } else {
-      let tempArray = [recipient];
-      setRecipients(tempArray);
+
+    console.log(copy);
+    switch (copy) {
+      case "mainReciever":
+        _recipients.reciever = [email];
+        break;
+      case "cc":
+        !checkDuplicate(_recipients.cc, email)
+          ? _recipients.cc.push(email)
+          : "";
+        break;
+      case "bcc":
+        !checkDuplicate(_recipients.bcc, email)
+          ? _recipients.bcc.push(email)
+          : "";
+        break;
     }
+    console.log(_recipients);
+    setRecipients(_recipients);
     emptyInputFields();
   };
 
-  let removeRecipient = (index) => {
-    console.log(index);
-    let tempArray = [...recipients];
-    tempArray.splice(index, 1);
-    console.log(tempArray);
-    setRecipients(tempArray);
+  let removeRecipient = (key, index) => {
+    console.log(recipients[key][index]);
+    let _recipient = JSON.parse(JSON.stringify(recipients));
+    _recipient[key].splice(index, 1);
+    console.log(_recipient);
+    setRecipients(_recipient);
   };
 
   let saveRecipients = () => {
     localStorage.setItem("recipients", JSON.stringify(recipients));
-    open.setisOpen({ ...open.isOpen, [open._key]: false });
+    content.closeModal(content._key);
   };
 
   return (
     <Dialog
       className="w-full h-full"
-      open={open.isOpen[open._key]}
-      onClose={() => open.setisOpen({ ...open.isOpen, [open._key]: false })}
+      open={content.isOpen[content._key]}
+      onClose={() => content.closeModal(content._key)}
     >
       <Dialog.Panel>
         <Dialog.Title></Dialog.Title>
@@ -98,9 +119,7 @@ export default function RecipientsTable(open) {
               <div className="flex">
                 <button
                   className="ml-auto m-2 mr-3 font-bold text-2xl hover:text-red-600"
-                  onClick={() =>
-                    open.setisOpen({ ...open.isOpen, [open._key]: false })
-                  }
+                  onClick={() => content.closeModal(content._key)}
                 >
                   X
                 </button>
@@ -122,29 +141,32 @@ export default function RecipientsTable(open) {
                     </tr>
                   </thead>
                   <tbody>
-                    {recipients !== null
-                      ? recipients.map((recipient, index) => {
+                    {Object.keys(recipients).map((key) => {
+                      if (recipients[key].length > 0) {
+                        return recipients[key].map((item, index) => {
+                          console.log(item);
+                          console.log(recipients[key].length);
                           return (
-                            <tr key={`${recipient.email} tr`} className="">
-                              <th key={`${recipient.email} empty`}></th>
+                            <tr key={`${key + item} tr`} className="">
+                              <th key={`${key + item}} empty`}></th>
                               <th
-                                key={`${recipient.email} email`}
+                                key={`${key + item} email`}
                                 className="text-left border-b-4 border-r-4 border-tableborders uppercase"
                               >
-                                {recipient.email}
+                                {item}
                               </th>
                               <th
-                                key={`${recipient.email} copy`}
+                                key={`${key + item} copy`}
                                 className="text-left border-b-4 border-r-4 border-tableborders p-2 uppercase"
                               >
-                                {recipient.copy}
+                                {key}
                               </th>
                               <th
-                                key={`${recipient.email} delete`}
+                                key={`${key + item} delete`}
                                 className="text-left border-b-4 border-tableborders p-1"
                               >
                                 <a
-                                  onClick={() => removeRecipient(index)}
+                                  onClick={() => removeRecipient(key, index)}
                                   className="bg-tropicalindigo block w-8 h-8 leading-8 text-center font-extrabold ml-1 rounded-full text-black text-xl shadow-4xl hover:cursor-pointer hover:bg-ultraviolet"
                                 >
                                   X
@@ -152,8 +174,9 @@ export default function RecipientsTable(open) {
                               </th>
                             </tr>
                           );
-                        })
-                      : ""}
+                        });
+                      }
+                    })}
 
                     <tr className="">
                       <th></th>
@@ -209,7 +232,7 @@ export default function RecipientsTable(open) {
                         value={
                           localStorage.getItem("subject") !== null
                             ? localStorage.getItem("subject")
-                            : subject
+                            : content.subject
                         }
                         onChange={(e) => inputChange(e)}
                       />

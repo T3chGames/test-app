@@ -7,9 +7,7 @@ export default function popup(content) {
     <Dialog
       className=" w-full h-full"
       open={content.isOpen[content._key]}
-      onClose={() =>
-        content.setisOpen({ ...content["isOpen"], [content._key]: false })
-      }
+      onClose={() => content.closeModal(content._key)}
     >
       <Dialog.Panel>
         <Dialog.Title></Dialog.Title>
@@ -20,12 +18,7 @@ export default function popup(content) {
                 {content.title}
                 <button
                   className="ml-auto m-2 mr-3 font-bold text-2xl hover:text-red-600"
-                  onClick={() =>
-                    content.setisOpen({
-                      ...content["isOpen"],
-                      [content._key]: false,
-                    })
-                  }
+                  onClick={() => content.closeModal(content._key)}
                 >
                   X
                 </button>

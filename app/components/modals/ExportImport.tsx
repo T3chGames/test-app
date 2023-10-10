@@ -4,6 +4,7 @@ import { useState } from "react";
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
+
 // const [templateIsImported, setTemplateIsImported] = useState(false);
 // const [importedTemplate, setImportedTemplate] = useState(null);
 
@@ -16,6 +17,7 @@ function loadTemplate(unlayer, template) {
   }
   console.log(template);
   if (Object.hasOwn(template, "templateData")) {
+    localStorage.setItem("design", template.templateData);
     template = JSON.parse(template.templateData);
   }
 
@@ -35,6 +37,7 @@ export default function ExportImportModal(content: any) {
   const [fileName, setFileName] = useState("");
   const [importedTemplate, setImportedTemplate] = useState(null);
   const [uploadedFileName, setUploadedFileName] = useState(null);
+  const [user, setUser] = useState(localStorage.getItem("user"));
 
   const exportJson = () => {
     const unlayer = content.unlayer;
@@ -62,6 +65,7 @@ export default function ExportImportModal(content: any) {
       let result = JSON.parse(reader.result);
       if (Object.keys(result).length > 0) {
         setImportedTemplate(result);
+        localStorage.setItem("design", JSON.stringify(result));
         console.log(result);
       } else {
         return alert("empty file");
@@ -69,8 +73,6 @@ export default function ExportImportModal(content: any) {
     });
     reader.readAsText(file[0]);
   };
-
-  console.log(content.templates);
 
   return (
     <Dialog
@@ -98,20 +100,24 @@ export default function ExportImportModal(content: any) {
                 <div className="w-full max-w-md px-2 py-4 sm:px-0 ml-auto mr-auto">
                   <Tab.Group>
                     <Tab.List className="flex space-x-1 rounded-xl bg-tropicalindigo p-1">
-                      <Tab
-                        key="Import"
-                        className={({ selected }) =>
-                          classNames(
-                            "w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-white",
-                            " focus:outline-none ",
-                            selected
-                              ? "bg-ultraviolet shadow"
-                              : "text-white hover:bg-[#4f517db0] hover:text-white"
-                          )
-                        }
-                      >
-                        Import
-                      </Tab>
+                      {user !== null ? (
+                        <Tab
+                          key="Import"
+                          className={({ selected }) =>
+                            classNames(
+                              "w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-white",
+                              " focus:outline-none ",
+                              selected
+                                ? "bg-ultraviolet shadow"
+                                : "text-white hover:bg-[#4f517db0] hover:text-white"
+                            )
+                          }
+                        >
+                          Import
+                        </Tab>
+                      ) : (
+                        ""
+                      )}
                       <Tab
                         key="Export"
                         className={({ selected }) =>
@@ -142,15 +148,19 @@ export default function ExportImportModal(content: any) {
                       </Tab>
                     </Tab.List>
                     <Tab.Panels className="mt-2">
-                      <Tab.Panel
-                        key="export"
-                        className={classNames(
-                          "rounded-xl bg-white p-3",
-                          "focus:outline-none h-72"
-                        )}
-                      >
-                        {renderTemplates(content.templates, content.unlayer)}
-                      </Tab.Panel>
+                      {user !== null ? (
+                        <Tab.Panel
+                          key="import"
+                          className={classNames(
+                            "rounded-xl bg-white p-3",
+                            "focus:outline-none h-72"
+                          )}
+                        >
+                          {renderTemplates(content.templates, content.unlayer)}
+                        </Tab.Panel>
+                      ) : (
+                        ""
+                      )}
                       <Tab.Panel
                         key="download"
                         className="rounded-xl bg-white p-1 
