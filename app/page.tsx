@@ -9,7 +9,7 @@ import EmailEditor, {
 import { googleLogout } from "@react-oauth/google";
 import ModalRenderer from "./components/ModalRenderer";
 
-export default function Page() {
+export default function Page(this: any) {
   const emailEditorRef = useRef<EditorRef>(null);
 
   const [allIsOpen, setAllIsOpen] = useState({
@@ -29,6 +29,8 @@ export default function Page() {
   const [attachments, setAttachments] = useState([]);
 
   const [templateName, setTemplateName] = useState("");
+
+  const [templates, setTemplates] = useState([]);
 
   const [templateDescription, setTemplateDescription] = useState("");
 
@@ -66,6 +68,20 @@ export default function Page() {
     );
   };
 
+  const fetchTemplates = async () => {
+    if (user === null) {
+      return;
+    }
+    await fetch(
+      `http://127.0.0.1:8000/api/template/?userId=${user.id}&userEmail=${user.email}`
+    ).then((res) => {
+      res.json().then((data) => {
+        console.log(data.templates);
+        return setTemplates(data.templates);
+      });
+    });
+  };
+
   useEffect(() => {
     setLoaded(true);
     // set the height of the editor to the page height
@@ -73,7 +89,7 @@ export default function Page() {
       document.getElementById("editorContainer")?.offsetHeight
     );
     if (user !== null) {
-      // fetchTemplates();
+      fetchTemplates();
       fetchDrafts();
     }
   }, []);
@@ -136,6 +152,9 @@ export default function Page() {
     };
     await fetch(`http://127.0.0.1:8000/api/draft`, requestOptions).then(
       (response) => {
+        fetchDrafts().then((drafts) => {
+          console.log(drafts);
+        });
         console.log(response);
       }
     );
@@ -144,43 +163,6 @@ export default function Page() {
   // save template to db
   const openSendModal = () => {
     openModal("sendEmail", true);
-  };
-  const sendEmail = () => {
-    fetchEmail().then((res) => {
-      console.log(res);
-    });
-  };
-
-  const fetchEmail = async () => {
-    let form = new FormData();
-    if (attachments.files) {
-      let length = attachments.files.length;
-      for (let i = 0; i < length; i++) {
-        console.log(i);
-        console.log(attachments.files[i]);
-        form.append("fileToUpload[]", attachments.files[i]);
-      }
-    }
-    form.append("template", currentTemplateHtml);
-    form.append("user", JSON.stringify(user));
-    if (subject) {
-      form.append("subject", subject);
-    }
-    if (recipients) {
-      form.append("recipients", recipients);
-    }
-    console.log(form.get("fileToUpload[]"));
-    // return;
-    const requestOptions = {
-      method: "POST",
-      "content-type": "multipart/form-data",
-      body: form,
-    };
-    await fetch(`http://127.0.0.1:8000/api/email`, requestOptions).then(
-      (response) => {
-        console.log(response);
-      }
-    );
   };
 
   const saveTemplate = () => {
@@ -205,8 +187,12 @@ export default function Page() {
         templateName: templateName,
         templateDescription: templateDescription,
         publicTemplate: templatePublic,
+      }).then(() => {
+        fetchTemplates().then(() => {
+          console.log(templates);
+        });
+        closeModal("templateName");
       });
-      closeModal("templateName");
     });
   };
 
@@ -224,6 +210,12 @@ export default function Page() {
       return;
     }
     console.log(user);
+    let _sendTime = new Date(Date.parse(sendDate + " " + sendTime)).getTime();
+    console.log(_sendTime <= new Date().getTime());
+    // return;
+    if (_sendTime <= new Date().getTime()) {
+      _sendTime = null;
+    }
     const unlayer = emailEditorRef.current?.editor;
     unlayer?.saveDesign((design) => {
       const template = design;
@@ -235,10 +227,7 @@ export default function Page() {
         recipients: recipients,
         attachments: attachments,
         subject: subject,
-        sendOn:
-          sendDate != null && sendTime !== null
-            ? Date.parse(sendDate + " " + sendTime)
-            : null,
+        sendOn: _sendTime,
       });
       closeModal("saveAsDraft");
     });
@@ -339,6 +328,9 @@ export default function Page() {
           attachments={attachments}
           recipients={recipients}
           currentTemplateHtml={currentTemplateHtml}
+          fetchDrafts={fetchDrafts}
+          fetchTemplates={fetchTemplates}
+          templates={templates}
         ></ModalRenderer>
       ) : (
         ""

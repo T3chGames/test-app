@@ -6,10 +6,7 @@ import RecipientsTable from "./modals/RecipientsTable";
 import moment from "moment";
 
 export default function components(content: any) {
-  const [templates, setTemplates] = useState([]);
-
   const allIsOpen = content.allIsOpen;
-  const setAllIsOpen = content.setAllIsOpen;
   const setTemplateName = content.setTemplateName;
   const closeModal = content.closeModal;
   const setTemplateDescription = content.setTemplateDescription;
@@ -23,25 +20,14 @@ export default function components(content: any) {
   const setSubject = content.setSubject;
   const sendDate = content.sendDate;
   const sendTime = content.sendTime;
-  const sendEmail = content.sendEmail;
   const attachments = content.attachments;
   const recipients = content.recipients;
   const currentTemplateHtml = content.currentTemplateHtml;
+  const fetchDrafts = content.fetchDrafts;
+  const fetchTemplates = content.fetchTemplates;
+  const templates = content.templates;
 
   // get all templates the current user has access to
-  const fetchTemplates = async () => {
-    if (user === null) {
-      return;
-    }
-    await fetch(
-      `http://127.0.0.1:8000/api/template/?userId=${user.id}&userEmail=${user.email}`
-    ).then((res) => {
-      res.json().then((data) => {
-        console.log(data.templates);
-        return setTemplates(data.templates);
-      });
-    });
-  };
 
   const fetchEmail = async () => {
     let form = new FormData();
@@ -54,6 +40,7 @@ export default function components(content: any) {
       }
     }
     form.append("template", currentTemplateHtml);
+    form.append("templateJson", localStorage.getItem("design"));
     form.append("user", JSON.stringify(user));
     if (subject) {
       form.append("subject", subject);
@@ -61,7 +48,17 @@ export default function components(content: any) {
     if (recipients) {
       form.append("recipients", recipients);
     }
-    console.log(form.get("fileToUpload[]"));
+    if (sendDate && sendTime) {
+      if (
+        new Date(`${sendDate} ${sendTime}`).getTime() <= new Date().getTime()
+      ) {
+        return;
+      } else {
+        const date = String(new Date(`${sendDate} ${sendTime}`).getTime());
+        form.append("sendOn", date);
+        console.log("date is there");
+      }
+    }
     // return;
     const requestOptions = {
       method: "POST",
@@ -74,10 +71,6 @@ export default function components(content: any) {
       }
     );
   };
-
-  useEffect(() => {
-    fetchTemplates();
-  }, []);
 
   return (
     <div className="">
@@ -258,6 +251,7 @@ export default function components(content: any) {
         isOpen={allIsOpen}
         unlayer={emailEditorRef.current?.editor}
         templates={templates}
+        fetchTemplates={fetchTemplates}
       ></ExportImportModal>
       <PopupModal
         closeModal={closeModal}
@@ -275,9 +269,12 @@ export default function components(content: any) {
             <h2 className="text-2xl mt-1">
               Send on:
               {content.sendDate
-                ? `  ${moment(new Date(`${sendDate} ${sendTime}`)).format(
-                    "MMMM Do YYYY, h:mm:ss a"
-                  )} `
+                ? new Date(`${sendDate} ${sendTime}`).getTime() <=
+                  new Date().getTime()
+                  ? " Now (input date is past)"
+                  : `${moment(new Date(`${sendDate} ${sendTime}`)).format(
+                      "MMMM Do YYYY, h:mm:ss a"
+                    )}`
                 : " Now"}
             </h2>
           </div>

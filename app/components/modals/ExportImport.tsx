@@ -87,7 +87,7 @@ export default function ExportImportModal(content: any) {
             <div className="bg-modalbackground w-2/5 h-2/4 sm:h-[32rem] p-4">
               <div className="flex">
                 <h1 className="font-bold text-3xl ml-auto uppercase">
-                  Export/import templates
+                  Import/Export templates
                 </h1>
                 <button
                   className="ml-auto m-2 mr-3 font-bold text-2xl hover:text-red-600"

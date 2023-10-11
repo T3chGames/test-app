@@ -144,8 +144,6 @@ export default function RecipientsTable(content) {
                     {Object.keys(recipients).map((key) => {
                       if (recipients[key].length > 0) {
                         return recipients[key].map((item, index) => {
-                          console.log(item);
-                          console.log(recipients[key].length);
                           return (
                             <tr key={`${key + item} tr`} className="">
                               <th key={`${key + item}} empty`}></th>
