@@ -26,10 +26,14 @@ export default function components(content: any) {
   const fetchDrafts = content.fetchDrafts;
   const fetchTemplates = content.fetchTemplates;
   const templates = content.templates;
+  const errorMessages = content.errorMessages;
 
   // get all templates the current user has access to
 
   const fetchEmail = async () => {
+    if (errorMessages.sendEmail.error) {
+      return;
+    }
     let form = new FormData();
     if (attachments.files) {
       let length = attachments.files.length;
@@ -46,13 +50,18 @@ export default function components(content: any) {
       form.append("subject", subject);
     }
     if (recipients) {
-      form.append("recipients", recipients);
+      console.log(recipients);
+      // return;
+      form.append("recipients", JSON.stringify(recipients));
     }
     if (sendDate && sendTime) {
       if (
         new Date(`${sendDate} ${sendTime}`).getTime() <= new Date().getTime()
       ) {
-        return;
+        const date = String(
+          new Date(`${sendDate} ${sendTime}`).getTime() <= new Date().getTime()
+        );
+        form.append("sendOn", date);
       } else {
         const date = String(new Date(`${sendDate} ${sendTime}`).getTime());
         form.append("sendOn", date);
@@ -238,6 +247,8 @@ export default function components(content: any) {
         isOpen={allIsOpen}
         subject={subject}
         setSubject={setSubject}
+        recipients={recipients}
+        setRecipients={content.setRecipients}
       ></RecipientsTable>
       <AttachmentsTable
         closeModal={closeModal}
@@ -277,6 +288,9 @@ export default function components(content: any) {
                     )}`
                 : " Now"}
             </h2>
+            <h2 className="text-red-800 pt-6 font-extrabold text-2xl">
+              {errorMessages.sendEmail.message}
+            </h2>
           </div>
         }
         action={
@@ -284,9 +298,9 @@ export default function components(content: any) {
             <button
               onClick={() => {
                 fetchEmail().then((res) => {
+                  console.log(res);
                   closeModal("sendEmail");
                 });
-                // closeModal("sendEmail");
               }}
               className="text-2xl font-bold ml-6 bg-tropicalindigo w-24 h-8 rounded-md shadow-2xl"
             >
