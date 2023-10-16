@@ -205,7 +205,10 @@ export default function RecipientsTable(content) {
                           <option value="cc">CC</option>
                         </select>
                       </th>
-                      <th className="text-left border-b-4 border-tableborders p-2">
+                      <th
+                        id="delete"
+                        className="text-left border-b-4 border-tableborders p-2"
+                      >
                         DELETE
                       </th>
                     </tr>
@@ -215,12 +218,14 @@ export default function RecipientsTable(content) {
                   <div className="grid grid-cols-3 w-full absolute bottom-0">
                     <div>
                       <button
+                        id="save"
                         onClick={saveRecipients}
                         className="bg-tropicalindigo hover:bg-ultraviolet text-black font-bold text-xl p-1 pl-10 pr-10 ml-12 mr-6 mb-4 rounded-2xl"
                       >
                         SAVE
                       </button>
                       <button
+                        id="add"
                         onClick={addRecipient}
                         className="bg-tropicalindigo hover:bg-ultraviolet text-black font-bold text-2xl p-1 pl-3 pr-3 mb-4 rounded-full text-center leading-7"
                       >
@@ -232,6 +237,7 @@ export default function RecipientsTable(content) {
                       <input
                         className="text-black mr-10 text-center text-xl p-1 font-bold w-4/5 outline-none rounded-md"
                         type="text"
+                        id="subject"
                         name="subject"
                         placeholder="subject"
                         value={

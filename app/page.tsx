@@ -22,6 +22,7 @@ export default function Page(this: any) {
     saveSucces: false,
     loginError: false,
     sendEmail: false,
+    loadDraft: false,
   });
 
   const [containerHeight, setContainerHeight] = useState(600);
@@ -41,7 +42,9 @@ export default function Page(this: any) {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
 
   const [recipients, setRecipients] = useState(
-    JSON.parse(localStorage.getItem("recipients"))
+    localStorage.getItem("recipients") != null
+      ? JSON.parse(localStorage.getItem("recipients"))
+      : { reciever: [], bcc: [], cc: [] }
   );
 
   const [unlayer, setUnlayer] = useState(null);
@@ -246,6 +249,7 @@ export default function Page(this: any) {
       console.log(html);
     });
     setUnlayer(unlayer);
+    openModal("loadDraft", false);
     unlayer.addEventListener("design:updated", (data) => {
       let design = unlayer.saveDesign((design) => {
         localStorage.setItem("design", JSON.stringify(design));
@@ -369,12 +373,14 @@ export default function Page(this: any) {
           subject={subject}
           setSubject={setSubject}
           sendDate={sendDate}
+          setSendDate={setSendDate}
           sendTime={sendTime}
+          setSendTime={setSendTime}
           attachments={attachments}
           recipients={recipients}
           setRecipients={setRecipients}
           currentTemplateHtml={currentTemplateHtml}
-          fetchDrafts={fetchDrafts}
+          drafts={userDrafts}
           fetchTemplates={fetchTemplates}
           templates={templates}
           errorMessages={errorMessages}
@@ -385,9 +391,9 @@ export default function Page(this: any) {
 
       <div className="grid bg-darkslate grid-cols-[450px_450px_auto] w-screen">
         <div className="relative col-span-1 text-left">
-          <span className="absolute bottom-0 left-0 ml-4 m-2">
+          <span id="login" className="absolute bottom-0 left-0 ml-4 m-2">
             {user === null ? (
-              <a className="font-bold text-lg shadow-xl" href="/login">
+              <a className="font-bold text-lg shadow-xl login" href="/login">
                 LOGIN FOR COMPANYS
               </a>
             ) : (
@@ -411,6 +417,7 @@ export default function Page(this: any) {
                 ATTACHMENTS
               </button>
               <button
+                id="importExport"
                 className="bg-ultraviolet w-44 font-bold mr-2 pl-5 pr-5 p-2 rounded-xl mt-1 mb-2 shadow-xl"
                 onClick={() => openModal("exportImport", false)}
               >
@@ -425,6 +432,7 @@ export default function Page(this: any) {
                 SAVE AS DRAFT
               </button>
               <button
+                id="saveTemplate"
                 className="bg-ultraviolet w-44 font-bold mr-2 pl-2 pr-2 p-2 rounded-xl mt-1 mb-2 shadow-xl"
                 onClick={() => openModal("templateName", true)}
               >
@@ -438,32 +446,36 @@ export default function Page(this: any) {
             <input
               className="text-black w-40 p-2 rounded-m mt-1 mb-2 font-bold text-l shadow-xl block ml-auto"
               type="date"
+              value={sendDate ? sendDate : ""}
               onChange={(e) => {
                 console.log(e.target.value);
                 setSendDate(e.target.value);
               }}
-              name=""
-              id=""
+              name="sendDate"
+              id="sendDate"
             />
             <input
               className="text-black w-40 p-2 rounded-m mt-1 mb-2 font-bold text-l shadow-xl block ml-auto"
               type="time"
+              value={sendTime ? sendTime : ""}
               onChange={(e) => {
-                console.log(new Date(`${sendDate} ${e.target.value}`));
+                console.log(e.target.value);
                 setSendTime(e.target.value);
               }}
-              name=""
-              id=""
+              name="sendTime"
+              id="sendTime"
             />
           </div>
           <div className="">
             <button
+              id="recipients"
               className="bg-tropicalindigo font-bold w-40 mr-2 pl-2 pr-2 p-2 rounded-xl mt-1 mb-2 shadow-xl block ml-auto"
               onClick={() => openModal("recipientTable", true)}
             >
               RECIPIENTS
             </button>
             <button
+              id="send"
               className="bg-ultraviolet font-bold mr-2 pl-5 pr-5 w-40 p-2 rounded-xl mt-1 mb-2 shadow-xl block ml-auto"
               onClick={() => {
                 checkRequired();

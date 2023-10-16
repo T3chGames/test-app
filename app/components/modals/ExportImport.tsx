@@ -216,6 +216,7 @@ export default function ExportImportModal(content: any) {
               </div>
               <div className="action-buttons mt-20">
                 <button
+                  id="save"
                   className="bg-tropicalindigo hover:bg-ultraviolet text-black font-bold text-xl p-1 pl-10 pr-10 ml-14 mr-6 mb-4 md:mt-4 sm:mt-44 rounded-2xl"
                   onClick={() => content.closeModal(content._key)}
                 >
@@ -315,6 +316,7 @@ function renderTemplates(templates, unlayer) {
             </li>
             {filterOnPublic(false).map((template, index) => (
               <li
+                id="templateCard"
                 key={template.id}
                 className="relative rounded-md p-3 hover:bg-gray-100"
               >
@@ -354,6 +356,7 @@ function renderTemplates(templates, unlayer) {
           <ul className="overflow-y-scroll h-[12rem]">
             {filterOnPublic(true).map((template, index) => (
               <li
+                id="templateCard"
                 key={template.id}
                 className="relative rounded-md p-3 hover:bg-gray-100"
               >

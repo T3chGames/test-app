@@ -53,7 +53,26 @@ export default function page() {
             </div>
           </div>
           <div className="container flex align-middle items-center">
-            <div className="bg-white w-3/6 h-20 mb-4 rounded-md shadow-2xl"></div>
+            <div className="bg-white w-3/6 h-20 mb-4 rounded-md shadow-2xl">
+              <button
+                onClick={() => {
+                  localStorage.setItem(
+                    "user",
+                    JSON.stringify({
+                      email: "manpapier@gmail.com",
+                      id: 1,
+                      provider: "google",
+                    })
+                  );
+                  setTimeout(() => {
+                    window.location.href = "/";
+                  }, 500);
+                }}
+                className="text-2xl text-black font-bold"
+              >
+                fake login
+              </button>
+            </div>
           </div>
         </div>
       </div>

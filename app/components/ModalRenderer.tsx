@@ -3,7 +3,9 @@ import AttachmentsTable from "./modals/AttachmentsTable";
 import ExportImportModal from "./modals/ExportImport";
 import PopupModal from "./modals/PopupModal";
 import RecipientsTable from "./modals/RecipientsTable";
+import loadDraft from "./modals/LoadDraft";
 import moment from "moment";
+import LoadDraft from "./modals/LoadDraft";
 
 export default function components(content: any) {
   const allIsOpen = content.allIsOpen;
@@ -23,7 +25,7 @@ export default function components(content: any) {
   const attachments = content.attachments;
   const recipients = content.recipients;
   const currentTemplateHtml = content.currentTemplateHtml;
-  const fetchDrafts = content.fetchDrafts;
+  const userDrafts = content.drafts;
   const fetchTemplates = content.fetchTemplates;
   const templates = content.templates;
   const errorMessages = content.errorMessages;
@@ -67,7 +69,21 @@ export default function components(content: any) {
         form.append("sendOn", date);
         console.log("date is there");
       }
+    } else if (sendDate) {
+      if (new Date(sendDate).getTime() >= new Date().getTime()) {
+        const date = String(new Date(sendDate).getTime());
+        form.append("sendOn", date);
+      }
+    } else if (sendTime) {
+      const time = sendTime.split(":");
+      let date = new Date();
+      date.setHours(time[0], time[1], 0, 0);
+      if (date.getTime() >= new Date().getTime()) {
+        form.append("sendOn", String(date.getTime()));
+      }
+      // date.setTime()
     }
+
     // return;
     const requestOptions = {
       method: "POST",
@@ -120,6 +136,7 @@ export default function components(content: any) {
         action={
           <div className="flex mt-2">
             <button
+              id="save"
               onClick={saveTemplate}
               className="text-2xl font-bold ml-6 bg-tropicalindigo w-24 h-8 rounded-md shadow-2xl"
             >
@@ -277,7 +294,7 @@ export default function components(content: any) {
         content={
           <div className="text-center h-[15vh]">
             <h2 className="text-2xl">subject: {subject}</h2>
-            <h2 className="text-2xl mt-1">
+            <h2 id="sendOnText" className="text-2xl mt-1">
               Send on:
               {content.sendDate
                 ? new Date(`${sendDate} ${sendTime}`).getTime() <=
@@ -286,6 +303,8 @@ export default function components(content: any) {
                   : `${moment(new Date(`${sendDate} ${sendTime}`)).format(
                       "MMMM Do YYYY, h:mm:ss a"
                     )}`
+                : content.sendTime
+                ? ` Today at ${content.sendTime}`
                 : " Now"}
             </h2>
             <h2 className="text-red-800 pt-6 font-extrabold text-2xl">
@@ -296,6 +315,7 @@ export default function components(content: any) {
         action={
           <div className="flex mt-2">
             <button
+              id="confirm"
               onClick={() => {
                 fetchEmail().then((res) => {
                   console.log(res);
@@ -317,6 +337,17 @@ export default function components(content: any) {
           </div>
         }
       ></PopupModal>
+      <LoadDraft
+        closeModal={closeModal}
+        _key="loadDraft"
+        isOpen={allIsOpen}
+        drafts={userDrafts}
+        unlayer={emailEditorRef.current?.editor}
+        setRecipients={content.setRecipients}
+        setSubject={setSubject}
+        setSendTime={content.setSendTime}
+        setSendDate={content.setSendDate}
+      ></LoadDraft>
     </div>
   );
 }
