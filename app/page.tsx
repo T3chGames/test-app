@@ -41,7 +41,7 @@ export default function Page(this: any) {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
 
   const [recipients, setRecipients] = useState(
-    localStorage.getItem("recipients")
+    JSON.parse(localStorage.getItem("recipients"))
   );
 
   const [unlayer, setUnlayer] = useState(null);
@@ -55,6 +55,10 @@ export default function Page(this: any) {
   const [sendTime, setSendTime] = useState(null);
 
   const [loaded, setLoaded] = useState(false);
+
+  const [errorMessages, setErrorMessages] = useState({
+    sendEmail: { message: "", error: false },
+  });
 
   // get user drafts if a user is present
   const fetchDrafts = async () => {
@@ -287,6 +291,47 @@ export default function Page(this: any) {
     }
   };
 
+  // check before submitting email if all required fields are filled in
+  const checkRequired = () => {
+    console.log("checking");
+    console.log(recipients.reciever, subject);
+    let _sendEmail = { message: "", error: false };
+    if (!recipients.reciever[0]) {
+      console.log(recipients.reciever);
+      _sendEmail.message = "Error, reciever is required!";
+      _sendEmail.error = true;
+      setErrorMessages({
+        ...errorMessages,
+        sendEmail: _sendEmail,
+      });
+      return;
+    }
+    if (subject != null) {
+      console.log(subject.length);
+      if (!(subject.length > 1)) {
+        _sendEmail.message = "Error, subject is required!";
+        _sendEmail.error = true;
+        setErrorMessages({
+          ...errorMessages,
+          sendEmail: _sendEmail,
+        });
+        return;
+      }
+    } else {
+      _sendEmail.message = "Error, subject is required!";
+      _sendEmail.error = true;
+      setErrorMessages({
+        ...errorMessages,
+        sendEmail: _sendEmail,
+      });
+      return;
+    }
+    setErrorMessages({
+      ...errorMessages,
+      sendEmail: _sendEmail,
+    });
+  };
+
   // log the user out
   const logout = () => {
     googleLogout();
@@ -327,10 +372,12 @@ export default function Page(this: any) {
           sendTime={sendTime}
           attachments={attachments}
           recipients={recipients}
+          setRecipients={setRecipients}
           currentTemplateHtml={currentTemplateHtml}
           fetchDrafts={fetchDrafts}
           fetchTemplates={fetchTemplates}
           templates={templates}
+          errorMessages={errorMessages}
         ></ModalRenderer>
       ) : (
         ""
@@ -419,6 +466,7 @@ export default function Page(this: any) {
             <button
               className="bg-ultraviolet font-bold mr-2 pl-5 pr-5 w-40 p-2 rounded-xl mt-1 mb-2 shadow-xl block ml-auto"
               onClick={() => {
+                checkRequired();
                 openSendModal();
               }}
             >

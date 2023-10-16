@@ -10,11 +10,12 @@ export default function RecipientsTable(content) {
   //   console.log(content);
   // let [isOpen, setIscontent] = useState(content.isOpen);
 
-  let [recipients, setRecipients] = useState(
-    localStorage.getItem("recipients")
-      ? JSON.parse(localStorage.getItem("recipients"))
-      : { reciever: [], cc: [], bcc: [] }
-  );
+  // let [recipients, setRecipients] = useState(
+  //   content.recipients ? content.recipients : { reciever: [], cc: [], bcc: [] }
+  // );
+
+  let recipients = content.recipients;
+  let setRecipients = content.setRecipients;
 
   // let [recipients, setRecipients] = useState<recipient[] | []>(
   //   localStorage.getItem("recipients")
@@ -49,6 +50,7 @@ export default function RecipientsTable(content) {
 
   let addRecipient = () => {
     let _recipients = JSON.parse(JSON.stringify(recipients));
+    console.log(recipients);
     let checkDuplicate = (array, item) => {
       if (array.lenght > 0) {
         return false;
@@ -88,6 +90,7 @@ export default function RecipientsTable(content) {
         break;
     }
     console.log(_recipients);
+    content.setRecipients(_recipients);
     setRecipients(_recipients);
     emptyInputFields();
   };
@@ -97,11 +100,15 @@ export default function RecipientsTable(content) {
     let _recipient = JSON.parse(JSON.stringify(recipients));
     _recipient[key].splice(index, 1);
     console.log(_recipient);
-    setRecipients(_recipient);
+    localStorage.setItem("recipients", JSON.stringify(_recipient));
+    content.setRecipients(_recipient);
   };
 
   let saveRecipients = () => {
     localStorage.setItem("recipients", JSON.stringify(recipients));
+    content.setRecipients(recipients);
+    // setRecipients(recipients);
+    console.log(recipients);
     content.closeModal(content._key);
   };
 
