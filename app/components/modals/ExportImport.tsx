@@ -1,5 +1,7 @@
 import { Dialog, Tab } from "@headlessui/react";
-import { useState } from "react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { createElement, useEffect, useState } from "react";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -38,6 +40,7 @@ export default function ExportImportModal(content: any) {
   const [importedTemplate, setImportedTemplate] = useState(null);
   const [uploadedFileName, setUploadedFileName] = useState(null);
   const [user, setUser] = useState(localStorage.getItem("user"));
+  const [htmlDesign, setHtmlDesign] = useState(content.html);
 
   const exportJson = () => {
     const unlayer = content.unlayer;
@@ -52,6 +55,39 @@ export default function ExportImportModal(content: any) {
 
       link.click();
     });
+  };
+
+  const blobToFile = (theBlob: Blob, fileName: string): File => {
+    const b: any = theBlob;
+    //A Blob() is almost a File() - it's just missing the two properties below which we will add
+    b.lastModifiedDate = new Date();
+    b.name = fileName;
+
+    //Cast to a File() type
+    return theBlob as File;
+  };
+  const exportPDF = async () => {
+    let fdata = new FormData();
+    fdata.append("html[]", content.html);
+    const requestOptions = {
+      body: fdata,
+      method: "POST",
+    };
+    await fetch(`http://127.0.0.1:8000/api/download`, requestOptions).then(
+      (response) => {
+        response.blob().then((file) => {
+          const fileURL = window.URL.createObjectURL(
+            blobToFile(file, "joe.pdf")
+          );
+
+          // Setting various property values
+          let alink = document.createElement("a");
+          alink.href = fileURL;
+          alink.download = `${fileName}.pdf`;
+          alink.click();
+        });
+      }
+    );
   };
 
   const onFileUpload = (file) => {
@@ -177,10 +213,16 @@ export default function ExportImportModal(content: any) {
                           </div>
                           <div className="text-right">
                             <button
-                              className="text-white pl-2 pr-2 p-1 ml-2 rounded-md bg-darkslate text-right"
+                              className="text-white pr-2 p-1 w-40 ml-2 rounded-md bg-darkslate text-center"
                               onClick={exportJson}
                             >
                               DOWNLOAD JSON
+                            </button>
+                            <button
+                              className="text-white mt-2 w-40 pr-2 p-1 ml-2 rounded-md bg-darkslate text-center"
+                              onClick={exportPDF}
+                            >
+                              DOWNLOAD PDF
                             </button>
                           </div>
                         </div>

@@ -27,27 +27,13 @@ context("Actions", () => {
     if (day.toString().length == 1) {
       day = `0${day}`;
     }
-    cy.get("#sendDate").type(`${year}-${month}-${day}`);
-  });
-  it("test selecting time", () => {
-    cy.get("#sendTime").type(`12:30`);
-  });
-
-  it("login and then set time and check if time is set", () => {
-    const time = new Date();
-
-    cy.get("#sendTime").type(`${time.getHours()}:${time.getMinutes() + 1}`);
-    cy.get("#send").click();
-    cy.get("#sendOnText").should(
-      "contain.text",
-      `${time.getHours()}:${time.getMinutes() + 1}`
-    );
+    cy.get("#sendDate").click();
+    cy.contains("18").click();
   });
 
   it("login, set send time, set subject and receivers and send the email.", () => {
     const time = new Date();
 
-    cy.get("#sendTime").type(`${time.getHours()}:${time.getMinutes() + 3}`);
     cy.get("#recipients").click();
     cy.get("[type=email]").type("k.breider@provrex.nl{enter}");
     cy.get("#copy").select("MAIN RECIEVER");

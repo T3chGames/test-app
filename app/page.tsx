@@ -1,13 +1,12 @@
 "use client";
 import "./globals.css";
 import React, { useEffect, useRef, useState } from "react";
-import EmailEditor, {
-  Editor,
-  EditorRef,
-  EmailEditorProps,
-} from "react-email-editor";
+import EmailEditor, { EditorRef, EmailEditorProps } from "react-email-editor";
 import { googleLogout } from "@react-oauth/google";
 import ModalRenderer from "./components/ModalRenderer";
+import DatePicker from "react-datepicker";
+
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function Page(this: any) {
   const emailEditorRef = useRef<EditorRef>(null);
@@ -24,6 +23,7 @@ export default function Page(this: any) {
     sendEmail: false,
     loadDraft: false,
   });
+  const [startDate, setStartDate] = useState(new Date());
 
   const [containerHeight, setContainerHeight] = useState(600);
 
@@ -53,15 +53,13 @@ export default function Page(this: any) {
 
   const [currentTemplateHtml, setCurrentTemplateHtml] = useState("");
 
-  const [sendDate, setSendDate] = useState(null);
-
-  const [sendTime, setSendTime] = useState(null);
-
   const [loaded, setLoaded] = useState(false);
 
   const [errorMessages, setErrorMessages] = useState({
     sendEmail: { message: "", error: false },
   });
+
+  const [fileDisplayArray, setFileDisplayArray] = useState([]);
 
   // get user drafts if a user is present
   const fetchDrafts = async () => {
@@ -69,6 +67,9 @@ export default function Page(this: any) {
       (res) => {
         res.json().then((drafts) => {
           setUserDrafts(drafts);
+          if (drafts.length > 0) {
+            openModal("loadDraft", false);
+          }
           console.log(drafts);
         });
       }
@@ -133,6 +134,7 @@ export default function Page(this: any) {
       }
     );
   };
+
   // save a draft to db
   const saveDraftRequest = async (data) => {
     console.log(data.attachments.files);
@@ -217,12 +219,6 @@ export default function Page(this: any) {
       return;
     }
     console.log(user);
-    let _sendTime = new Date(Date.parse(sendDate + " " + sendTime)).getTime();
-    console.log(_sendTime <= new Date().getTime());
-    // return;
-    if (_sendTime <= new Date().getTime()) {
-      _sendTime = null;
-    }
     const unlayer = emailEditorRef.current?.editor;
     unlayer?.saveDesign((design) => {
       const template = design;
@@ -234,7 +230,7 @@ export default function Page(this: any) {
         recipients: recipients,
         attachments: attachments,
         subject: subject,
-        sendOn: _sendTime,
+        sendOn: startDate,
       });
       closeModal("saveAsDraft");
     });
@@ -249,7 +245,6 @@ export default function Page(this: any) {
       console.log(html);
     });
     setUnlayer(unlayer);
-    openModal("loadDraft", false);
     unlayer.addEventListener("design:updated", (data) => {
       let design = unlayer.saveDesign((design) => {
         localStorage.setItem("design", JSON.stringify(design));
@@ -369,13 +364,13 @@ export default function Page(this: any) {
           saveDraft={saveDraft}
           emailEditorRef={emailEditorRef}
           setAttachments={setAttachments}
+          setFileDisplayArray={setFileDisplayArray}
+          fileDisplayArray={fileDisplayArray}
           user={user}
           subject={subject}
           setSubject={setSubject}
-          sendDate={sendDate}
-          setSendDate={setSendDate}
-          sendTime={sendTime}
-          setSendTime={setSendTime}
+          startDate={startDate}
+          setStartDate={setStartDate}
           attachments={attachments}
           recipients={recipients}
           setRecipients={setRecipients}
@@ -443,27 +438,18 @@ export default function Page(this: any) {
         </div>
         <div className="flex col-span-1">
           <div className="ml-auto mr-2">
-            <input
-              className="text-black w-40 p-2 rounded-m mt-1 mb-2 font-bold text-l shadow-xl block ml-auto"
-              type="date"
-              value={sendDate ? sendDate : ""}
-              onChange={(e) => {
-                console.log(e.target.value);
-                setSendDate(e.target.value);
-              }}
-              name="sendDate"
+            <DatePicker
               id="sendDate"
-            />
-            <input
-              className="text-black w-40 p-2 rounded-m mt-1 mb-2 font-bold text-l shadow-xl block ml-auto"
-              type="time"
-              value={sendTime ? sendTime : ""}
-              onChange={(e) => {
-                console.log(e.target.value);
-                setSendTime(e.target.value);
+              selected={startDate}
+              onChange={(date) => {
+                setStartDate(date);
+                console.log(date);
               }}
-              name="sendTime"
-              id="sendTime"
+              showTimeSelect
+              timeFormat="HH:mm"
+              timeIntervals={5}
+              dateFormat="Pp"
+              className="text-black w-48 p-2 rounded-m mt-1 mb-2 font-bold text-l shadow-xl block ml-auto"
             />
           </div>
           <div className="">

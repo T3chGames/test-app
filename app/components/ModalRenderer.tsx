@@ -20,8 +20,8 @@ export default function components(content: any) {
   const user = content.user;
   const subject = content.subject;
   const setSubject = content.setSubject;
-  const sendDate = content.sendDate;
-  const sendTime = content.sendTime;
+  const startDate = content.startDate;
+  const setStartDate = content.setStartDate;
   const attachments = content.attachments;
   const recipients = content.recipients;
   const currentTemplateHtml = content.currentTemplateHtml;
@@ -29,6 +29,7 @@ export default function components(content: any) {
   const fetchTemplates = content.fetchTemplates;
   const templates = content.templates;
   const errorMessages = content.errorMessages;
+  const [loadedDraft, setLoadedDraft] = useState(null);
 
   // get all templates the current user has access to
 
@@ -37,13 +38,21 @@ export default function components(content: any) {
       return;
     }
     let form = new FormData();
-    if (attachments.files) {
-      let length = attachments.files.length;
+    console.log(attachments);
+    // return;
+    if (attachments.element?.files) {
+      let length = attachments.element.files.length;
       for (let i = 0; i < length; i++) {
         console.log(i);
-        console.log(attachments.files[i]);
-        form.append("fileToUpload[]", attachments.files[i]);
+        console.log(attachments.element.files[i]);
+        form.append("fileToUpload[]", attachments.element.files[i]);
       }
+    }
+    if (attachments.oldFiles?.length > 0) {
+      form.append("oldFiles", JSON.stringify(attachments.oldFiles));
+    }
+    if (loadedDraft !== null) {
+      form.append("draftId", loadedDraft.id);
     }
     form.append("template", currentTemplateHtml);
     form.append("templateJson", localStorage.getItem("design"));
@@ -56,33 +65,7 @@ export default function components(content: any) {
       // return;
       form.append("recipients", JSON.stringify(recipients));
     }
-    if (sendDate && sendTime) {
-      if (
-        new Date(`${sendDate} ${sendTime}`).getTime() <= new Date().getTime()
-      ) {
-        const date = String(
-          new Date(`${sendDate} ${sendTime}`).getTime() <= new Date().getTime()
-        );
-        form.append("sendOn", date);
-      } else {
-        const date = String(new Date(`${sendDate} ${sendTime}`).getTime());
-        form.append("sendOn", date);
-        console.log("date is there");
-      }
-    } else if (sendDate) {
-      if (new Date(sendDate).getTime() >= new Date().getTime()) {
-        const date = String(new Date(sendDate).getTime());
-        form.append("sendOn", date);
-      }
-    } else if (sendTime) {
-      const time = sendTime.split(":");
-      let date = new Date();
-      date.setHours(time[0], time[1], 0, 0);
-      if (date.getTime() >= new Date().getTime()) {
-        form.append("sendOn", String(date.getTime()));
-      }
-      // date.setTime()
-    }
+    form.append("sendOn", new Date(startDate).getTime());
 
     // return;
     const requestOptions = {
@@ -272,12 +255,16 @@ export default function components(content: any) {
         _key="attachmentsTable"
         isOpen={allIsOpen}
         setAttachments={setAttachments}
+        attachments={attachments}
+        setFileDisplayArray={content.setFileDisplayArray}
+        fileDisplayArray={content.fileDisplayArray}
       ></AttachmentsTable>
       <ExportImportModal
         closeModal={closeModal}
         _key="exportImport"
         isOpen={allIsOpen}
         unlayer={emailEditorRef.current?.editor}
+        html={currentTemplateHtml}
         templates={templates}
         fetchTemplates={fetchTemplates}
       ></ExportImportModal>
@@ -295,16 +282,15 @@ export default function components(content: any) {
           <div className="text-center h-[15vh]">
             <h2 className="text-2xl">subject: {subject}</h2>
             <h2 id="sendOnText" className="text-2xl mt-1">
-              Send on:
-              {content.sendDate
-                ? new Date(`${sendDate} ${sendTime}`).getTime() <=
-                  new Date().getTime()
+              {"Send on: "}
+              {content.startDate
+                ? new Date(startDate).getTime() <= new Date().getTime()
                   ? " Now (input date is past)"
-                  : `${moment(new Date(`${sendDate} ${sendTime}`)).format(
+                  : `${moment(new Date(startDate)).format(
                       "MMMM Do YYYY, h:mm:ss a"
                     )}`
-                : content.sendTime
-                ? ` Today at ${content.sendTime}`
+                : startDate
+                ? ` Today at ${startDate}`
                 : " Now"}
             </h2>
             <h2 className="text-red-800 pt-6 font-extrabold text-2xl">
@@ -345,8 +331,12 @@ export default function components(content: any) {
         unlayer={emailEditorRef.current?.editor}
         setRecipients={content.setRecipients}
         setSubject={setSubject}
-        setSendTime={content.setSendTime}
+        setStartDate={setStartDate}
         setSendDate={content.setSendDate}
+        setFileDisplayArray={content.setFileDisplayArray}
+        fileDisplayArray={content.fileDisplayArray}
+        setAttachments={setAttachments}
+        setLoadedDraft={setLoadedDraft}
       ></LoadDraft>
     </div>
   );

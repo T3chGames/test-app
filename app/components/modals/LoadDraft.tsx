@@ -28,25 +28,17 @@ export default function LoadDraft(content) {
       localStorage.setItem("subject", draft.subject);
     }
 
-    if (Object.hasOwn(draft, "sendOn")) {
+    if (draft.attachments !== null) {
+      content.setFileDisplayArray(JSON.parse(draft.attachments));
+      content.setAttachments({
+        element: [],
+        oldFiles: JSON.parse(draft.attachments),
+      });
+    }
+    content.setLoadedDraft(draft);
+    if (draft.sendOn !== null) {
       const date = new Date(parseInt(draft.sendOn));
-      console.log(date);
-      const month = () => {
-        if (date.getMonth().toString().length == 1) {
-          return `0${date.getMonth()}`;
-        } else {
-          return date.getMonth();
-        }
-      };
-      const day = () => {
-        if (date.getDay().toString().length == 1) {
-          return `0${date.getDay()}`;
-        } else {
-          return date.getDay();
-        }
-      };
-      content.setSendTime(`${date.getHours()}:${date.getMinutes()}`);
-      content.setSendDate(date.toISOString().split("T")[0]);
+      content.setStartDate(date);
     }
 
     if (Object.hasOwn(draft, "templateData")) {
@@ -113,7 +105,7 @@ export default function LoadDraft(content) {
                       "focus:outline-none h-72"
                     )}
                   >
-                    <ul className="overflow-y-scroll h-[12rem]">
+                    <ul className="overflow-y-scroll h-[16rem]">
                       {content.drafts.map((draft, index) => (
                         <li
                           id="templateCard"

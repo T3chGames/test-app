@@ -7,30 +7,39 @@ interface recipient {
 }
 
 export default function attachmentsTable(open) {
-  const [files, setFiles] = useState();
-  const [fileDisplayArray, setFileDisplayArray] = useState([]);
+  const [files, setFiles] = useState({ element: [], oldFiles: [] });
 
-  const deleteFile = (index) => {
+  const deleteFile = (index, newData) => {
+    if (!newData) {
+      let temp = [...open.fileDisplayArray];
+      temp.splice(index, 1);
+      open.setFileDisplayArray(temp);
+      return;
+    }
     const dt = new DataTransfer();
     console.log(files);
-    console.log(files.files);
-    for (let i = 0; i < files.files.length; i++) {
+    console.log(files.element.files);
+    for (let i = 0; i < files.element.files.length; i++) {
       if (i !== index) {
-        dt.items.add(files.files[i]);
+        dt.items.add(files.element.files[i]);
       }
     }
-    let newElement = files;
+    let newElement = files.element;
     newElement.files = dt.files;
-    setFiles(newElement);
+    setFiles({ element: newElement, oldFiles: [] });
 
-    console.log(files.files);
-    let tempfiles = [...fileDisplayArray];
+    console.log(files.element.files);
+    let tempfiles = [...open.fileDisplayArray];
     tempfiles.splice(index, 1);
-    setFileDisplayArray(tempfiles);
+    open.setFileDisplayArray(tempfiles);
   };
 
   const saveAttachments = () => {
     // console.log(JSON.stringify(files));
+    files.oldFiles = open.fileDisplayArray.filter((item) => {
+      return Object.hasOwn(item, "oldName");
+    });
+    console.log(files);
     open.setAttachments(files);
     // localStorage.setItem("attachments", JSON.stringify(files));
     open.closeModal(open._key);
@@ -71,24 +80,47 @@ export default function attachmentsTable(open) {
                     </tr>
                   </thead>
                   <tbody>
-                    {fileDisplayArray !== null &&
-                    fileDisplayArray.length > 0 ? (
-                      fileDisplayArray.map((file, index) => {
+                    {open.fileDisplayArray !== null &&
+                    open.fileDisplayArray.length > 0 ? (
+                      open.fileDisplayArray.map((file, index) => {
                         return (
-                          <tr key={`${file.name} tr`} className="">
-                            <th key={`${file.name} empty`}></th>
+                          <tr
+                            key={`${
+                              file.oldName
+                                ? file.oldName
+                                : file.name + Math.floor(Math.random() * 1000)
+                            } tr`}
+                            className=""
+                          >
                             <th
-                              key={`${file.name} copy`}
+                              key={`${
+                                file.oldName
+                                  ? file.oldName
+                                  : file.name + Math.floor(Math.random() * 1000)
+                              } empty`}
+                            ></th>
+                            <th
+                              key={`${
+                                file.oldName
+                                  ? file.oldName
+                                  : file.name + Math.floor(Math.random() * 1000)
+                              } copy`}
                               className="text-left border-b-4 border-r-4 border-tableborders p-2 uppercase"
                             >
-                              {file.name}
+                              {file.oldName ? file.oldName : file.name}
                             </th>
                             <th
-                              key={`${file.name} delete`}
+                              key={`${
+                                file.oldName
+                                  ? file.oldName
+                                  : file.name + Math.floor(Math.random() * 1000)
+                              } delete`}
                               className="text-left border-b-4 border-tableborders p-1"
                             >
                               <a
-                                onClick={() => deleteFile(index)}
+                                onClick={() =>
+                                  deleteFile(index, file.oldName ? false : true)
+                                }
                                 className="bg-tropicalindigo block w-8 h-8 leading-8 text-center font-extrabold ml-1 rounded-full text-black text-xl shadow-4xl hover:cursor-pointer hover:bg-ultraviolet"
                               >
                                 X
@@ -123,7 +155,7 @@ export default function attachmentsTable(open) {
                         placeholder="subject"
                         onChange={(e) => {
                           console.log(e);
-                          let tempArray = [...fileDisplayArray];
+                          let tempArray = [...open.fileDisplayArray];
                           // if (fileDisplayArray) {
                           //   tempArray = files;
                           // } else {
@@ -136,9 +168,12 @@ export default function attachmentsTable(open) {
                               ...document.getElementById("upload").files
                             );
                           }
-                          setFileDisplayArray(tempArray);
+                          open.setFileDisplayArray(tempArray);
                           console.log(tempArray);
-                          setFiles(document.getElementById("upload"));
+                          setFiles({
+                            element: document.getElementById("upload"),
+                            oldFiles: [],
+                          });
                         }}
                       />
                     </div>
