@@ -9,6 +9,8 @@ interface recipient {
 export default function attachmentsTable(open) {
   const [files, setFiles] = useState({ element: [], oldFiles: [] });
 
+  // remove file from atachments table
+
   const deleteFile = (index, newData) => {
     if (!newData) {
       let temp = [...open.fileDisplayArray];
@@ -17,8 +19,6 @@ export default function attachmentsTable(open) {
       return;
     }
     const dt = new DataTransfer();
-    console.log(files);
-    console.log(files.element.files);
     for (let i = 0; i < files.element.files.length; i++) {
       if (i !== index) {
         dt.items.add(files.element.files[i]);
@@ -28,22 +28,19 @@ export default function attachmentsTable(open) {
     newElement.files = dt.files;
     setFiles({ element: newElement, oldFiles: [] });
 
-    console.log(files.element.files);
     let tempfiles = [...open.fileDisplayArray];
     tempfiles.splice(index, 1);
     open.setFileDisplayArray(tempfiles);
   };
 
+  // if there are imported files from a draft they will be appended to files as oldfiles
+
   const saveAttachments = () => {
-    // console.log(JSON.stringify(files));
     files.oldFiles = open.fileDisplayArray.filter((item) => {
       return Object.hasOwn(item, "oldName");
     });
-    console.log(files);
     open.setAttachments(files);
-    // localStorage.setItem("attachments", JSON.stringify(files));
     open.closeModal(open._key);
-    console.log(files);
   };
 
   return (
@@ -154,7 +151,6 @@ export default function attachmentsTable(open) {
                         name="subject"
                         placeholder="subject"
                         onChange={(e) => {
-                          console.log(e);
                           let tempArray = [...open.fileDisplayArray];
                           // if (fileDisplayArray) {
                           //   tempArray = files;
@@ -169,7 +165,6 @@ export default function attachmentsTable(open) {
                             );
                           }
                           open.setFileDisplayArray(tempArray);
-                          console.log(tempArray);
                           setFiles({
                             element: document.getElementById("upload"),
                             oldFiles: [],

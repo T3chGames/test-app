@@ -2,6 +2,8 @@
 import { GoogleLogin } from "@react-oauth/google";
 
 export default function page() {
+  // send a request to the backend to decode the login token provided by google
+
   const decodeLogin = async (bearerToken: string) => {
     const body = { bearerToken: bearerToken, provider: "google" };
     const requestOptions = {
@@ -12,7 +14,6 @@ export default function page() {
     await fetch(`http://127.0.0.1:8000/api/decode`, requestOptions).then(
       (response) => {
         response.json().then((data) => {
-          console.log(data);
           localStorage.setItem("user", JSON.stringify(data));
           window.location.href = "/";
         });

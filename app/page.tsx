@@ -70,11 +70,12 @@ export default function Page(this: any) {
           if (drafts.length > 0) {
             openModal("loadDraft", false);
           }
-          console.log(drafts);
         });
       }
     );
   };
+
+  // get templates from logged in user
 
   const fetchTemplates = async () => {
     if (user === null) {
@@ -84,7 +85,6 @@ export default function Page(this: any) {
       `http://127.0.0.1:8000/api/template/?userId=${user.id}&userEmail=${user.email}`
     ).then((res) => {
       res.json().then((data) => {
-        console.log(data.templates);
         return setTemplates(data.templates);
       });
     });
@@ -96,6 +96,7 @@ export default function Page(this: any) {
     setContainerHeight(
       document.getElementById("editorContainer")?.offsetHeight
     );
+    // if there is a user fetch their templates and drafts
     if (user !== null) {
       fetchTemplates();
       fetchDrafts();
@@ -129,30 +130,20 @@ export default function Page(this: any) {
     };
 
     await fetch(`http://127.0.0.1:8000/api/template`, requestOptions).then(
-      (response) => {
-        console.log(response);
-      }
+      (response) => {}
     );
   };
 
   // save a draft to db
   const saveDraftRequest = async (data) => {
-    console.log(data.attachments.files);
-    // console.log(data.length);
     let form = new FormData();
     if (data.attachments.files) {
       let length = data.attachments.files.length;
       for (let i = 0; i < length; i++) {
-        console.log(i);
-        console.log(data.attachments.files[i]);
         form.append("fileToUpload[]", data.attachments.files[i]);
       }
     }
     form.append("draft", JSON.stringify(data));
-    // form.append("file", data.attachments.files[0]);
-    // form.append("name", data.attachments.files[0].name);
-
-    // console.log(form.get("file"));
     data.test = form;
     const requestOptions = {
       method: "POST",
@@ -161,10 +152,7 @@ export default function Page(this: any) {
     };
     await fetch(`http://127.0.0.1:8000/api/draft`, requestOptions).then(
       (response) => {
-        fetchDrafts().then((drafts) => {
-          console.log(drafts);
-        });
-        console.log(response);
+        fetchDrafts().then((drafts) => {});
       }
     );
   };
@@ -185,7 +173,6 @@ export default function Page(this: any) {
       return;
     }
 
-    console.log(user);
     const unlayer = emailEditorRef.current?.editor;
     unlayer;
     unlayer?.saveDesign((design) => {
@@ -197,9 +184,7 @@ export default function Page(this: any) {
         templateDescription: templateDescription,
         publicTemplate: templatePublic,
       }).then(() => {
-        fetchTemplates().then(() => {
-          console.log(templates);
-        });
+        fetchTemplates().then(() => {});
         closeModal("templateName");
       });
     });
@@ -207,8 +192,6 @@ export default function Page(this: any) {
 
   // the logic for saving a draft and then calling db store function
   const saveDraft = () => {
-    console.log(attachments);
-    // return;
     if (user == null) {
       alert("you must be logged in to save a template");
       return;
@@ -218,7 +201,6 @@ export default function Page(this: any) {
       alert("template name and description are required");
       return;
     }
-    console.log(user);
     const unlayer = emailEditorRef.current?.editor;
     unlayer?.saveDesign((design) => {
       const template = design;
@@ -236,13 +218,14 @@ export default function Page(this: any) {
     });
   };
 
+  // when the editor is ready add event listener for updates
+
   const onReady: EmailEditorProps["onReady"] = (unlayer) => {
     if (localStorage.getItem("design")) {
       unlayer.loadDesign(JSON.parse(localStorage.getItem("design")));
     }
     unlayer.exportHtml((html) => {
       setCurrentTemplateHtml(html.html);
-      console.log(html);
     });
     setUnlayer(unlayer);
     unlayer.addEventListener("design:updated", (data) => {
@@ -255,6 +238,7 @@ export default function Page(this: any) {
     });
   };
 
+  // while the editor is loading
   const onLoad = () => {};
 
   // modal handler checks if user must be logged in to show modal
@@ -292,11 +276,8 @@ export default function Page(this: any) {
 
   // check before submitting email if all required fields are filled in
   const checkRequired = () => {
-    console.log("checking");
-    console.log(recipients.reciever, subject);
     let _sendEmail = { message: "", error: false };
     if (!recipients.reciever[0]) {
-      console.log(recipients.reciever);
       _sendEmail.message = "Error, reciever is required!";
       _sendEmail.error = true;
       setErrorMessages({
@@ -306,7 +287,6 @@ export default function Page(this: any) {
       return;
     }
     if (subject != null) {
-      console.log(subject.length);
       if (!(subject.length > 1)) {
         _sendEmail.message = "Error, subject is required!";
         _sendEmail.error = true;
@@ -443,7 +423,6 @@ export default function Page(this: any) {
               selected={startDate}
               onChange={(date) => {
                 setStartDate(date);
-                console.log(date);
               }}
               showTimeSelect
               timeFormat="HH:mm"

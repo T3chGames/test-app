@@ -7,50 +7,27 @@ interface recipient {
 }
 
 export default function RecipientsTable(content) {
-  //   console.log(content);
-  // let [isOpen, setIscontent] = useState(content.isOpen);
-
-  // let [recipients, setRecipients] = useState(
-  //   content.recipients ? content.recipients : { reciever: [], cc: [], bcc: [] }
-  // );
-
   let recipients = content.recipients;
   let setRecipients = content.setRecipients;
 
-  // let [recipients, setRecipients] = useState<recipient[] | []>(
-  //   localStorage.getItem("recipients")
-  //     ? []
-  //     : (JSON.parse(localStorage.getItem("recipients")) as recipient[])
-  // );
+  // input change handler for subject
 
   let inputChange = (e) => {
     content.setSubject(e.target.value);
     localStorage.setItem("subject", e.target.value);
-    console.log(e.target.value);
   };
 
+  // empty copy and email inputs
+
   let emptyInputFields = () => {
-    console.log("reset fields");
     document.getElementById("copy").value = "";
     document.getElementById("emailInput").value = "";
   };
 
-  // let checkForMainReciever = (): boolean => {
-  //   if (
-  //     recipients?.some((_recipient) => {
-  //       return _recipient.copy == "mainReciever";
-  //     })
-  //   ) {
-  //     alert("There can only be one main reciever");
-  //     return true;
-  //   } else {
-  //     return false;
-  //   }
-  // };
+  // save recipient to array
 
   let addRecipient = () => {
     let _recipients = JSON.parse(JSON.stringify(recipients));
-    console.log(recipients);
     let checkDuplicate = (array, item) => {
       if (array.lenght > 0) {
         return false;
@@ -73,7 +50,6 @@ export default function RecipientsTable(content) {
       return;
     }
 
-    console.log(copy);
     switch (copy) {
       case "mainReciever":
         _recipients.reciever = [email];
@@ -89,26 +65,25 @@ export default function RecipientsTable(content) {
           : "";
         break;
     }
-    console.log(_recipients);
     content.setRecipients(_recipients);
     setRecipients(_recipients);
     emptyInputFields();
   };
 
+  // remove recipient from array
+
   let removeRecipient = (key, index) => {
-    console.log(recipients[key][index]);
     let _recipient = JSON.parse(JSON.stringify(recipients));
     _recipient[key].splice(index, 1);
-    console.log(_recipient);
     localStorage.setItem("recipients", JSON.stringify(_recipient));
     content.setRecipients(_recipient);
   };
 
+  // save recipients to localstorage
+
   let saveRecipients = () => {
     localStorage.setItem("recipients", JSON.stringify(recipients));
     content.setRecipients(recipients);
-    // setRecipients(recipients);
-    console.log(recipients);
     content.closeModal(content._key);
   };
 

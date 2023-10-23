@@ -1,38 +1,28 @@
 import { Dialog, Tab } from "@headlessui/react";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-import { createElement, useEffect, useState } from "react";
+import { useState } from "react";
 
+// function for joining classes together for the styling of tabs
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-// const [templateIsImported, setTemplateIsImported] = useState(false);
-// const [importedTemplate, setImportedTemplate] = useState(null);
+// load a template into the editor
 
 function loadTemplate(unlayer, template) {
   if (template == undefined) {
     unlayer?.loadBlank();
-    // setTemplateIsImported(false);
-    // setImportedTemplate(null);
     return;
   }
-  console.log(template);
   if (Object.hasOwn(template, "templateData")) {
     localStorage.setItem("design", template.templateData);
     template = JSON.parse(template.templateData);
   }
 
   if (Object.hasOwn(template, "body") && Object.hasOwn(template, "counters")) {
-    console.log(unlayer);
-    console.log(template);
     unlayer?.loadDesign(template);
   } else {
     alert("Please make sure the file is a template!");
   }
-
-  //   setTemplateIsImported(true);
-  //   setImportedTemplate(template);
 }
 
 export default function ExportImportModal(content: any) {
@@ -40,8 +30,8 @@ export default function ExportImportModal(content: any) {
   const [importedTemplate, setImportedTemplate] = useState(null);
   const [uploadedFileName, setUploadedFileName] = useState(null);
   const [user, setUser] = useState(localStorage.getItem("user"));
-  const [htmlDesign, setHtmlDesign] = useState(content.html);
 
+  // export template to json and then to a json file
   const exportJson = () => {
     const unlayer = content.unlayer;
 
@@ -57,15 +47,18 @@ export default function ExportImportModal(content: any) {
     });
   };
 
+  // convert a blob to a file by adding a lastmodified date and name
+
   const blobToFile = (theBlob: Blob, fileName: string): File => {
     const b: any = theBlob;
-    //A Blob() is almost a File() - it's just missing the two properties below which we will add
     b.lastModifiedDate = new Date();
     b.name = fileName;
 
-    //Cast to a File() type
     return theBlob as File;
   };
+
+  // make a request to the backend to convert html to a pdf
+
   const exportPDF = async () => {
     let fdata = new FormData();
     fdata.append("html[]", content.html);
@@ -80,7 +73,7 @@ export default function ExportImportModal(content: any) {
             blobToFile(file, "joe.pdf")
           );
 
-          // Setting various property values
+          // downloading the pdf
           let alink = document.createElement("a");
           alink.href = fileURL;
           alink.download = `${fileName}.pdf`;
@@ -90,11 +83,12 @@ export default function ExportImportModal(content: any) {
     );
   };
 
+  // function for handeling a file upload
+
   const onFileUpload = (file) => {
     if (!file.length) {
       return;
     }
-    console.log(file[0].name);
     setUploadedFileName(file[0].name);
     const reader = new FileReader();
     reader.addEventListener("load", () => {
@@ -102,7 +96,6 @@ export default function ExportImportModal(content: any) {
       if (Object.keys(result).length > 0) {
         setImportedTemplate(result);
         localStorage.setItem("design", JSON.stringify(result));
-        console.log(result);
       } else {
         return alert("empty file");
       }

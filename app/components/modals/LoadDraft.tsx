@@ -1,23 +1,23 @@
-import { Dialog, Tab, Transition } from "@headlessui/react";
-import { Fragment, useState } from "react";
+import { Dialog, Tab } from "@headlessui/react";
+
+// load drafts gets openend if the user has pending drafts
 
 export default function LoadDraft(content) {
-  console.log(content);
+  // function for joining classes together for the styling of tabs
+
   function classNames(...classes) {
     return classes.filter(Boolean).join(" ");
   }
 
+  // load drafts and set all values that are saved in the draft
+
   function loadDraft(draft) {
-    console.log(draft);
     unlayer = content.unlayer;
     if (draft == undefined) {
       unlayer?.loadBlank();
-      // setTemplateIsImported(false);
-      // setImportedTemplate(null);
       return;
     }
 
-    console.log(draft.recipients);
     if (Object.hasOwn(draft, "recipients")) {
       content.setRecipients(JSON.parse(draft.recipients));
       localStorage.setItem("recipients", draft.recipients);
@@ -47,15 +47,10 @@ export default function LoadDraft(content) {
     }
 
     if (Object.hasOwn(draft, "body") && Object.hasOwn(draft, "counters")) {
-      console.log(unlayer);
-      console.log(draft);
       unlayer?.loadDesign(draft);
     } else {
       alert("Please make sure the file is a draft!");
     }
-
-    //   setTemplateIsImported(true);
-    //   setImportedTemplate(draft);
   }
 
   return (

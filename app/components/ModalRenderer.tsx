@@ -31,20 +31,17 @@ export default function components(content: any) {
   const errorMessages = content.errorMessages;
   const [loadedDraft, setLoadedDraft] = useState(null);
 
-  // get all templates the current user has access to
+  // check conditions and send a email request to the backend
 
   const fetchEmail = async () => {
     if (errorMessages.sendEmail.error) {
       return;
     }
     let form = new FormData();
-    console.log(attachments);
     // return;
     if (attachments.element?.files) {
       let length = attachments.element.files.length;
       for (let i = 0; i < length; i++) {
-        console.log(i);
-        console.log(attachments.element.files[i]);
         form.append("fileToUpload[]", attachments.element.files[i]);
       }
     }
@@ -61,7 +58,6 @@ export default function components(content: any) {
       form.append("subject", subject);
     }
     if (recipients) {
-      console.log(recipients);
       // return;
       form.append("recipients", JSON.stringify(recipients));
     }
@@ -74,9 +70,7 @@ export default function components(content: any) {
       body: form,
     };
     await fetch(`http://127.0.0.1:8000/api/email`, requestOptions).then(
-      (response) => {
-        console.log(response);
-      }
+      (response) => {}
     );
   };
 
@@ -304,7 +298,6 @@ export default function components(content: any) {
               id="confirm"
               onClick={() => {
                 fetchEmail().then((res) => {
-                  console.log(res);
                   closeModal("sendEmail");
                 });
               }}
